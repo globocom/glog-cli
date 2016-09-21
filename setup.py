@@ -26,7 +26,7 @@ setup(
     author="Sinval Vieira Mendes Neto",
     author_email='sinvalneto01@gmail.com',
     url='https://github.com/globocom/glog-cli',
-      download_url = 'https://github.com/globocom/glog-cli/tarball/0.2',
+    download_url = 'https://github.com/globocom/glog-cli/tarball/0.2',
     packages=[
         'glogcli',
     ],

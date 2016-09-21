@@ -20,13 +20,13 @@ test_requirements = [
 
 setup(
     name='glogcli',
-    version='0.1.0',
+    version='0.2.0',
     description="Graylog command line interface.",
     long_description=readme + '\n\n' + history,
     author="Sinval Vieira Mendes Neto",
     author_email='sinvalneto01@gmail.com',
     url='https://github.com/globocom/glog-cli',
-      download_url = 'https://github.com/globocom/glog-cli/tarball/0.2',
+    download_url = 'https://github.com/globocom/glog-cli/tarball/0.2',
     packages=[
         'glogcli',
     ],

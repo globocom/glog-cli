@@ -1,10 +1,11 @@
-
 from __future__ import division, print_function
+import re
+import click
 import requests
 import arrow
 import syslog
 import six
-
+from glogcli.formats import LogLevel
 from dateutils import datetime_converter
 
 
@@ -58,9 +59,10 @@ class SearchRange(object):
 
 
 class SearchQuery(object):
+
     def __init__(self, search_range, query="*", limit=None, offset=None, filter=None, fields=None, sort=None, ascending=False):
         self.search_range = search_range
-        self.query = query
+        self.query = SearchQuery.replace_log_level(query)
         self.limit = limit
         self.offset = offset
         self.filter = filter
@@ -68,12 +70,28 @@ class SearchQuery(object):
         self.sort = sort
         self.ascending = ascending
 
+    @staticmethod
+    def replace_log_level(query):
+        log_level_regex = 'level\:\s*[a-zA-Z]+\s*'
+        match = re.search(log_level_regex, query)
+        if match:
+            log_level_name = match.group(0).split(':')[1].strip()
+            log_level_code = LogLevel.find_by_level_name(log_level_name)
+            if not log_level_code:
+                message = "The given log level({}) is invalid. Use one of the following: {}"
+                click.echo(message.format(log_level_name, LogLevel.list_levels()))
+                exit()
+            return re.sub(log_level_regex, 'level:%s ' % log_level_code, query)
+        else:
+            return query
+
     def copy_with_range(self, search_range):
         q = SearchQuery(search_range, self.query, self.limit, self.offset, self.filter, self.fields, self.sort, self.ascending)
         return q
 
 
 class GraylogAPI(object):
+
     def __init__(self, host, port, username, password=None, host_tz='local', default_stream=None, scheme='http', proxies=None):
         self.host = host
         self.port = port

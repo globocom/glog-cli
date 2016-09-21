@@ -19,17 +19,17 @@ Instalation
 --------
 Try:
 
-	 pip install glogcli
+	pip install glogcli
 
 or:
 
-	 easy_install glogcli
+	easy_install glogcli
 
 or you can even install it from a GitHub clone:
 
-	 git clone https://github.com/globocom/glog-cli
-	 cd glog-cli/
-	 pip install .
+	git clone https://github.com/globocom/glog-cli
+	cd glog-cli/
+	pip install .
 
 Usage
 --------

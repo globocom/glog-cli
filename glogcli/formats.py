@@ -1,11 +1,11 @@
-
 from __future__ import division, print_function
 from termcolor import colored
-
 import syslog
 import six
 
+
 class Formatter(object):
+
     def __init__(self, format_template):
         self.format_template = format_template
 
@@ -13,33 +13,8 @@ class Formatter(object):
         def format(entry):
             message = entry.message
             timestamp = entry.timestamp.to('local')
-            level = entry.level
             host = entry.message_dict.get("source")
             facility = entry.message_dict.get("facility")
-
-            log_color = 'green'
-            log_background = None
-
-            if entry.level == syslog.LOG_CRIT:
-                log_color = 'white'
-                log_background = 'on_red'
-                level = "CRITICAL"
-            elif entry.level == syslog.LOG_ERR:
-                log_color = 'red'
-                level = "ERROR"
-            elif entry.level == syslog.LOG_WARNING:
-                log_color = 'yellow'
-                level = "WARNING"
-            elif entry.level == syslog.LOG_NOTICE:
-                log_color = 'green'
-                level = "NOTICE"
-            elif entry.level == syslog.LOG_INFO:
-                log_color = 'green'
-                level = "INFO"
-            elif entry.level == syslog.LOG_DEBUG:
-                log_color = 'blue'
-                level = "DEBUG"
-
             local_fields = list(fields)
 
             if "message" in local_fields:
@@ -53,17 +28,18 @@ class Formatter(object):
                 except:
                     pass
 
+            log_level = LogLevel.find_by_syslog_code(entry.level)
             message = six.u(message)
             log = six.u(self.format_template).format(
                 host=host or '',
                 facility=facility or '',
                 timestamp=timestamp.format("YYYY-MM-DD HH:mm:ss.SSS"),
-                level=level or '',
+                level=log_level['name'],
                 message=message,
                 field_text="; ".join(field_text))
 
             if color:
-                return colored(log, log_color, log_background)
+                return colored(log, log_level['color'], log_level['bg_color'])
             else:
                 return log
 
@@ -74,3 +50,31 @@ class Formatter(object):
             timestamp = entry.timestamp.to('local').format("YYYY-MM-DD HH:mm:ss.SSS")
             return timestamp+";"+";".join(map(lambda f: "'{val}'".format(val=entry.message_dict.get(f, "")), fields))
         return format
+
+
+class LogLevel(object):
+
+    LEVELS = {
+        syslog.LOG_CRIT:    {'name': 'CRITICAL', 'color': 'white', 'bg_color': 'on_red'},
+        syslog.LOG_ERR:     {'name': 'ERROR', 'color': 'red', 'bg_color': None},
+        syslog.LOG_WARNING: {'name': 'WARNING', 'color': 'yellow', 'bg_color': None},
+        syslog.LOG_NOTICE:  {'name': 'NOTICE', 'color': 'green', 'bg_color': None},
+        syslog.LOG_INFO:    {'name': 'INFO', 'color': 'green', 'bg_color': None},
+        syslog.LOG_DEBUG:   {'name': 'DEBUG', 'color': 'blue', 'bg_color': None},
+    }
+
+    DEFAULT_CONFIG = {'name': '', 'color': 'green', 'bg_color': None}
+
+    @staticmethod
+    def find_by_syslog_code(level):
+        return LogLevel.LEVELS.get(level, LogLevel.DEFAULT_CONFIG)
+
+    @staticmethod
+    def find_by_level_name(level_name):
+        for key, value in LogLevel.LEVELS.items():
+            if value['name'] == level_name:
+                return key
+
+    @staticmethod
+    def list_levels():
+        return [l.get('name') for l in LogLevel.LEVELS.values()]

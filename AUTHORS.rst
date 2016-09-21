@@ -2,12 +2,9 @@
 Credits
 =======
 
-Development Lead
-----------------
-
-* Sinval Vieira Mendes Neto <sinvalneto01@gmail.com>
 
 Contributors
 ------------
 
-None yet. Why not be the first?
+* Sinval Vieira <sinvalneto01@gmail.com>
+* Victor Mendes <victor.mendes.eduardo@gmail.com>

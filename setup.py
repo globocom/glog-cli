@@ -25,7 +25,7 @@ setup(
     long_description=readme + '\n\n' + history,
     author="Sinval Vieira Mendes Neto",
     author_email='sinvalneto01@gmail.com',
-    url='https://github.com/sinvalmendes/glogcli',
+    url='https://github.com/globocom/glog-cli',
     packages=[
         'glogcli',
     ],

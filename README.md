@@ -2,15 +2,6 @@
 Glog-CLI
 ===============================
 
-
-.. image:: https://img.shields.io/pypi/v/glogcli.svg
-        :target: https://pypi.python.org/pypi/glogcli
-        
-.. image:: https://pyup.io/repos/github/sinvalmendes/glogcli/shield.svg
-     :target: https://pyup.io/repos/github/globocom/glogcli/
-     :alt: Updates
-
-
 * Free software: Apache Software License 2.0
 
 Glog-CLI is an opensource command line interface for Graylog2.

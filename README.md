@@ -20,7 +20,7 @@ or you can even install it from a GitHub clone:
 
 	git clone https://github.com/globocom/glog-cli
 	cd glog-cli/
-	pip install .
+	pip install . -r requirements.txt
 
 Usage
 --------

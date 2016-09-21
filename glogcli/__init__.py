@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
+from _version import get_versions
 
-__author__ = 'Sinval Vieira Mendes Neto'
-__email__ = 'sinvalneto01@gmail.com'
-__version__ = '0.1.0'
+__version__ = get_versions()['version']
+del get_versions

@@ -33,7 +33,7 @@ setup(
                  'glogcli'},
     entry_points={
         'console_scripts': [
-            'glogcli=glogcli.cli:main'
+            'glogcli=glogcli.cli:run'
         ]
     },
     include_package_data=True,

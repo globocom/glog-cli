@@ -117,7 +117,8 @@ class GraylogAPI(object):
         if r.status_code == requests.codes.ok:
             return r.json()
         else:
-            r.raise_for_status()
+            click.echo("API error: Status: {} Message: {}".format(r.status_code, r.content))
+            exit()
 
     def search(self, query, fetch_all=False):
         sort = None

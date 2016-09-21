@@ -5,7 +5,7 @@ Glog-CLI
 
 .. image:: https://img.shields.io/pypi/v/glogcli.svg
         :target: https://pypi.python.org/pypi/glogcli
-
+        
 .. image:: https://pyup.io/repos/github/sinvalmendes/glogcli/shield.svg
      :target: https://pyup.io/repos/github/globocom/glogcli/
      :alt: Updates
@@ -17,19 +17,42 @@ Glog-CLI is an opensource command line interface for Graylog2.
 
 Instalation
 --------
+Try:
 
-> pip install glogcli
+	 pip install glogcli
 
-or
+or:
 
-> easy_install glogcli
+	 easy_install glogcli
 
-you can clone it from GitHub
-```sh
-git clone https://github.com/globocom/glog-cli
-cd glog-cli
-pip install .
-```
+or you can even install it from a GitHub clone:
+
+	 git clone https://github.com/globocom/glog-cli
+	 cd glog-cli/
+	 pip install .
+
+Usage
+--------
+Once you've installed glogcli, it's time to run some commands, try one of the following:
+
+> glogcli -h mygraylog.server.com -u john.doe -p password -@ "10 minutes ago" "source:my-app-server"
+
+-
+
+> glogcli -h mygraylog.server.com -u john.doe -p password "message:200"
+
+-
+
+> glogcli -h mygraylog.server.com -u john.doe -p password -f
+
+-
+
+> glocli -h mygraylog.server.com -u john.doe -p password "level:DEBUG"
+
+-
+
+> glocli -h mygraylog.server.com -u john.doe -p password "level:DEBUG" -f
+
 
 
 Configuration
@@ -38,20 +61,6 @@ Configuration
 Glog-CLI can reuse some common configurations like address of your Graylog server and your credentials, it will look for a
 *~/.glogcli.cfg* or a *glogcli.cfg* (in your current directory).
 
-Usage
---------
-Once you've already configured the glocli.cfg file, now it's time to run some commands.
-
-> glogcli -h mygraylog.server.com -u john.doe -p password -@ "10 minutes ago" "source:my-app-server"
-
-> glogcli -h mygraylog.server.com -u john.doe -p password "message:200"
-
-> glogcli -h mygraylog.server.com -u john.doe -p password -f
-
-> glocli -h mygraylog.server.com -u john.doe -p password "level:DEBUG"
-
-> glocli -h mygraylog.server.com -u john.doe -p password "level:DEBUG" -f
-
 Here is a template for your glogcli.cfg file:
 
     [environment:default]
@@ -59,11 +68,12 @@ Here is a template for your glogcli.cfg file:
     port=80
     username=john.doe
 
-    [format:custom] 
+    [format:custom]
     format={host} {level} {facility} {timestamp} {message} {field_text}
 
-Please try the *help* command to more detailed information about all the client features.
-> glogcli --help
+Please run the *help* command to more detailed information about all the client features.
+	
+	glogcli --help
 
     Usage: glogcli [OPTIONS] [QUERY]
 
@@ -94,6 +104,3 @@ Please try the *help* command to more detailed information about all the client 
       -r, --format-template TEXT  Message format template for the log (default:
                                   syslog format
       --help                      Show this message and exit.
-
-Credits
----------

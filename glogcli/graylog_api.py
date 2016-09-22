@@ -5,12 +5,15 @@ import requests
 import arrow
 import syslog
 import six
-from glogcli.formats import LogLevel
-from glogcli import utils
+import getpass
 from dateutils import datetime_converter
+from glogcli import utils
+from glogcli.utils import cli_error
+from glogcli.formats import LogLevel
 
 
 class Message(object):
+
     def __init__(self, message_dict={}):
         self.message_dict = dict(message_dict[utils.MESSAGE])
         self.timestamp = arrow.get(self.message_dict.get("timestamp", None))
@@ -22,6 +25,7 @@ class Message(object):
 
 
 class SearchResult(object):
+
     def __init__(self, result_dict={}):
         self.query = result_dict.get("query", None)
         self.query_object = None
@@ -40,6 +44,7 @@ class SearchResult(object):
 
 
 class SearchRange(object):
+
     def __init__(self, from_time=None, to_time=None, relative=False):
         self.from_time = datetime_converter(from_time)
         self.to_time = datetime_converter(to_time)
@@ -76,19 +81,18 @@ class SearchQuery(object):
         log_level_regex = 'level\:\s*[a-zA-Z]+\s*'
         match = re.search(log_level_regex, query)
         if match:
-            log_level_name = match.group(0).split(':')[1].strip()
+            log_level_name = match.group(0).split(':')[1].strip().upper()
             log_level_code = LogLevel.find_by_level_name(log_level_name)
             if not log_level_code:
                 message = "The given log level({}) is invalid. Use one of the following: {}"
-                click.echo(message.format(log_level_name, LogLevel.list_levels()))
+                cli_error(message.format(log_level_name, LogLevel.list_levels()))
                 exit()
             return re.sub(log_level_regex, 'level:%s ' % log_level_code, query)
         else:
             return query
 
     def copy_with_range(self, search_range):
-        q = SearchQuery(search_range, self.query, self.limit, self.offset, self.filter, self.fields, self.sort, self.ascending)
-        return q
+        return SearchQuery(search_range, self.query, self.limit, self.offset, self.filter, self.fields, self.sort, self.ascending)
 
 
 class GraylogAPI(object):
@@ -101,7 +105,6 @@ class GraylogAPI(object):
         self.host_tz = host_tz
         self.default_stream = default_stream
         self.proxies = proxies
-
         self.get_header = {"Accept": "application/json"}
         self.base_url = "{scheme}://{host}:{port}/api/".format(host=host, port=port, scheme=scheme)
 
@@ -130,35 +133,35 @@ class GraylogAPI(object):
                 sort = query.sort + ":desc"
 
         if fetch_all and query.limit is None:
-            result = self.search_raw(query.query, query.search_range, 1, query.offset,
-                                     query.filter, query.fields, sort)
+            result = self.search_raw(
+                query.query, query.search_range, 1, query.offset, query.filter, query.fields, sort
+            )
 
             sr = SearchRange(from_time=result.range_from, to_time=result.range_to)
 
             if result.total_results > 10000:
                 raise RuntimeError("Query returns more than 10000 log entries. Use offsets to query in chunks.")
 
-            result = self.search_raw(query.query, sr, result.total_results, query.offset,
-                                     query.filter, query.fields, sort)
+            result = self.search_raw(
+                query.query, sr, result.total_results, query.offset, query.filter, query.fields, sort
+            )
 
         else:
-            result = self.search_raw(query.query, query.search_range, query.limit, query.offset,
-                                     query.filter, query.fields, sort)
+            result = self.search_raw(
+                query.query, query.search_range, query.limit, query.offset, query.filter, query.fields, sort
+            )
 
         result.query_object = query
         return result
 
-    def user_info(self, username):
-        url = "users/" + username
-        return self.get(url=url)
+    def user_info(self):
+        return self.get(url=("users/" + self.username))
 
     def streams(self):
-        url = "streams"
-        return self.get(url=url)
+        return self.get(url="streams")
 
     def get_saved_queries(self):
-        url = "search/saved"
-        return self.get(url=url)
+        return self.get(url="search/saved")
 
     def search_raw(self, query, search_range, limit=None, offset=None, filter=None, fields=None, sort=None):
         url = "search/universal/"
@@ -173,12 +176,7 @@ class GraylogAPI(object):
         else:
             url += "absolute"
             range_args["from"] = search_range.from_time.to(self.host_tz).format(utils.DEFAULT_DATE_FORMAT)
-
-            if search_range.to_time is None:
-                to_time = arrow.now(self.host_tz)
-            else:
-                to_time = search_range.to_time.to(self.host_tz)
-
+            to_time = arrow.now(self.host_tz) if search_range.to_time is None else search_range.to_time.to(self.host_tz)
             range_args["to"] = to_time.format(utils.DEFAULT_DATE_FORMAT)
 
         if fields is not None:
@@ -192,6 +190,85 @@ class GraylogAPI(object):
             filter=filter,
             fields=fields,
             sort=sort,
-            **range_args)
+            **range_args
+        )
 
         return SearchResult(result)
+
+
+class GraylogAPIFactory(object):
+
+    @staticmethod
+    def get_graylog_api(cfg, environment, host, password, port, proxy, tls, username):
+        gl_api = None
+        if environment is not None:
+            gl_api = GraylogAPIFactory.api_from_config(cfg, env_name=environment)
+        else:
+            if host is not None:
+                if username is None:
+                    username = click.prompt(
+                        "Enter username for {host}:{port}".format(host=host, port=port), default=getpass.getuser()
+                    )
+                scheme = "https" if tls else "http"
+                proxies = {scheme: proxy} if proxy else None
+
+                gl_api = GraylogAPIFactory.api_from_host(
+                    host=host, port=port, username=username, scheme=scheme, proxies=proxies
+                )
+            else:
+                if cfg.has_section("environment:default"):
+                    gl_api = GraylogAPIFactory.api_from_config(cfg)
+                else:
+                    cli_error("Error: No host or environment configuration specified and no default found.")
+
+        if username is not None:
+            gl_api.username = username
+
+        if password is None:
+            prompt_message = "Enter password for {username}@{host}:{port}".format(
+                username=gl_api.username, host=gl_api.host, port=gl_api.port
+            )
+            password = click.prompt(prompt_message, hide_input=True)
+
+        gl_api.password = password
+        return gl_api
+
+    @staticmethod
+    def api_from_config(cfg, env_name="default"):
+        section_name = "environment:" + env_name
+
+        host = None
+        if cfg.has_option(section_name, utils.HOST):
+            host = cfg.get(section_name, utils.HOST)
+        else:
+            cli_error("'host' option is not available in section [%(section_name)s]" % {'section_name': section_name})
+
+        port = 80
+        if cfg.has_option(section_name, utils.PORT):
+            port = cfg.get(section_name, utils.PORT)
+
+        if cfg.has_option(section_name, utils.USERNAME):
+            username = cfg.get(section_name, utils.USERNAME)
+        else:
+            username = getpass.getuser()
+
+        scheme = "http"
+        if cfg.has_option(section_name, utils.TLS):
+            tls = cfg.get(section_name, utils.TLS)
+            if tls.lower() == "true" or tls is True:
+                scheme = "https"
+
+        if cfg.has_option(section_name, utils.PROXY):
+            proxies = {scheme: cfg.get(section_name, utils.PROXY)}
+        else:
+            proxies = None
+
+        default_stream = None
+        if cfg.has_option(section_name, utils.DEFAULT_STREAM):
+            default_stream = cfg.get(section_name, utils.DEFAULT_STREAM)
+
+        return GraylogAPI(host=host, port=port, username=username, default_stream=default_stream, scheme=scheme, proxies=proxies)
+
+    @staticmethod
+    def api_from_host(host, port, username, scheme, proxies=None):
+        return GraylogAPI(host=host, port=port, username=username, scheme=scheme, proxies=proxies)

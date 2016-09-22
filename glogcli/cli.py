@@ -2,16 +2,14 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import division, print_function, absolute_import
-
 import click
-import getpass
 import arrow
-
-from glogcli.graylog_api import SearchRange, SearchQuery
-from glogcli.utils import cli_error, api_from_config, api_from_host, get_config, get_message_format_template
+from glogcli.graylog_api import SearchRange, SearchQuery, GraylogAPIFactory
+from glogcli.utils import get_config, get_message_format_template
 from glogcli.output import LogPrinter
 from glogcli.formats import Formatter
 from glogcli.utils import UTF8
+
 
 @click.command()
 @click.option("-h", "--host", default=None, help="Your graylog node's host")
@@ -60,42 +58,9 @@ def run(host,
 
     cfg = get_config()
 
-    if environment is not None:
-        gl_api = api_from_config(cfg, node_name=environment)
-    else:
-        if host is not None:
-            if username is None:
-                username = click.prompt("Enter username for {host}:{port}".format(host=host, port=port),
-                                        default=getpass.getuser())
-            if tls:
-                scheme = "https"
-            else:
-                scheme = "http"
+    gl_api = GraylogAPIFactory.get_graylog_api(cfg, environment, host, password, port, proxy, tls, username)
 
-            if proxy:
-                proxies = {scheme: proxy}
-            else:
-                proxies = None
-
-            gl_api = api_from_host(host=host, port=port, username=username, scheme=scheme, proxies=proxies)
-        else:
-            if cfg.has_section("environment:default"):
-                gl_api = api_from_config(cfg)
-            else:
-                cli_error("Error: No host or node configuration specified and no default found.")
-
-    if username is not None:
-        gl_api.username = username
-
-    if password is None:
-        password = click.prompt("Enter password for {username}@{host}:{port}".format(
-            username=gl_api.username, host=gl_api.host, port=gl_api.port), hide_input=True)
-
-    gl_api.password = password
-
-    username = gl_api.username
     sr = SearchRange(from_time=search_from, to_time=search_to)
-
     fields = None
     if field:
         fields = list(field)
@@ -109,7 +74,7 @@ def run(host,
         sr.from_time = arrow.now().replace(seconds=-latency-1)
         sr.to_time = arrow.now().replace(seconds=-latency)
 
-    userinfo = gl_api.user_info(username)
+    userinfo = gl_api.user_info()
 
     stream_filter = None
     if stream or (userinfo["permissions"] != ["*"] and gl_api.default_stream is None):
@@ -133,9 +98,13 @@ def run(host,
 
     q = SearchQuery(search_range=sr, query=query, limit=limit, filter=stream_filter, fields=fields, sort=sort, ascending=asc)
 
+    formatter = get_formatter(cfg, fields, format_template, mode)
+    LogPrinter().run_logprint(gl_api, q, formatter, follow, latency, output)
+
+
+def get_formatter(cfg, fields, format_template, mode):
     format_template = get_message_format_template(cfg, format_template)
     formatter = Formatter(format_template)
-
     if mode == "tail":
         if fields:
             formatter = formatter.tail_format(fields)
@@ -143,8 +112,8 @@ def run(host,
             formatter = formatter.tail_format()
     elif mode == "dump":
         formatter = formatter.dump_format()
-    logprinter = LogPrinter()
-    logprinter.run_logprint(gl_api, q, formatter, follow, latency, output)
+    return formatter
+
 
 if __name__ == "__main__":
     run()

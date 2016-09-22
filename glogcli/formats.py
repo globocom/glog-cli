@@ -47,7 +47,7 @@ class Formatter(object):
 
         return format
 
-    def dump_format(self, fields=[utils.MESSAGE_FIELD, utils.SOURCE_FIELD, utils.FACILITY_FIELD]):
+    def dump_format(self, fields=[utils.MESSAGE, utils.SOURCE, utils.FACILITY]):
         def format(entry):
             timestamp = entry.timestamp.to('local').format(utils.DEFAULT_DATE_FORMAT)
             return timestamp+";"+";".join(map(lambda f: "'{val}'".format(val=entry.message_dict.get(f, "")), fields))

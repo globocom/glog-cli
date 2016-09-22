@@ -43,7 +43,7 @@ setup(
     author="Sinval Vieira Mendes Neto",
     author_email='sinvalneto01@gmail.com',
     url='https://github.com/globocom/glog-cli',
-    download_url = 'https://github.com/globocom/glog-cli/tarball/0.3',
+    download_url = 'https://github.com/globocom/glog-cli/tarball/0.4',
     packages=[
         'glogcli',
     ],
@@ -73,5 +73,5 @@ setup(
         'Programming Language :: Python :: 3.5',
     ],
     test_suite='tests',
-    tests_require=requirements
+    tests_require=test_requirements
 )

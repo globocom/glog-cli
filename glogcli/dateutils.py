@@ -4,13 +4,14 @@ import parsedatetime.parsedatetime as pdt
 import datetime
 import arrow
 import six
+from glogcli.utils import LOCAL_TIMEZONE
 
 
 def datetime_parser(s):
     try:
         ts = arrow.get(s)
         if ts.tzinfo == arrow.get().tzinfo:
-            ts = ts.replace(tzinfo='local')
+            ts = ts.replace(tzinfo=LOCAL_TIMEZONE)
     except:
         c = pdt.Calendar()
         result, what = c.parse(s)
@@ -21,7 +22,7 @@ def datetime_parser(s):
 
 
             ts = arrow.get(ts)
-            ts = ts.replace(tzinfo='local')
+            ts = ts.replace(tzinfo=LOCAL_TIMEZONE)
             return ts
 
     if ts is None:

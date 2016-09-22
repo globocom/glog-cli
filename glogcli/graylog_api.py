@@ -6,15 +6,16 @@ import arrow
 import syslog
 import six
 from glogcli.formats import LogLevel
+from glogcli import utils
 from dateutils import datetime_converter
 
 
 class Message(object):
     def __init__(self, message_dict={}):
-        self.message_dict = dict(message_dict["message"])
+        self.message_dict = dict(message_dict[utils.MESSAGE])
         self.timestamp = arrow.get(self.message_dict.get("timestamp", None))
         self.level = self.message_dict.get("level", syslog.LOG_INFO)
-        self.message = self.message_dict.get("message", "")
+        self.message = self.message_dict.get(utils.MESSAGE, "")
 
     def simple_formatted(self):
         return "[{}] {}: {}".format(self.timestamp, self.level, self.message)
@@ -171,14 +172,14 @@ class GraylogAPI(object):
             range_args["range"] = search_range.range_in_seconds()
         else:
             url += "absolute"
-            range_args["from"] = search_range.from_time.to(self.host_tz).format("YYYY-MM-DD HH:mm:ss.SSS")
+            range_args["from"] = search_range.from_time.to(self.host_tz).format(utils.DEFAULT_DATE_FORMAT)
 
             if search_range.to_time is None:
                 to_time = arrow.now(self.host_tz)
             else:
                 to_time = search_range.to_time.to(self.host_tz)
 
-            range_args["to"] = to_time.format("YYYY-MM-DD HH:mm:ss.SSS")
+            range_args["to"] = to_time.format(utils.DEFAULT_DATE_FORMAT)
 
         if fields is not None:
             fields = ",".join(fields)

@@ -3,13 +3,15 @@ from termcolor import colored
 import syslog
 import six
 
+from glogcli import utils
+
 
 class Formatter(object):
 
     def __init__(self, format_template):
         self.format_template = format_template
 
-    def tail_format(self, fields=["source", "facility", "line", "module"], color=True):
+    def tail_format(self, fields=[utils.SOURCE, utils.FACILITY, utils.LINE, utils.MODULE], color=True):
         def format(entry):
             message = entry.message
             timestamp = entry.timestamp.to('local')
@@ -17,14 +19,14 @@ class Formatter(object):
             facility = entry.message_dict.get("facility")
             local_fields = list(fields)
 
-            if "message" in local_fields:
-                local_fields.remove("message")
+            if utils.MESSAGE in local_fields:
+                local_fields.remove(utils.MESSAGE)
 
             field_text = map(lambda f: "{}:{}".format(f, entry.message_dict.get(f, "")), local_fields)
 
             if six.PY2:
                 try:
-                    message = message.encode("utf-8")
+                    message = message.encode(utils.UTF8)
                 except:
                     pass
 
@@ -33,7 +35,7 @@ class Formatter(object):
             log = six.u(self.format_template).format(
                 host=host or '',
                 facility=facility or '',
-                timestamp=timestamp.format("YYYY-MM-DD HH:mm:ss.SSS"),
+                timestamp=timestamp.format(utils.DEFAULT_DATE_FORMAT),
                 level=log_level['name'],
                 message=message,
                 field_text="; ".join(field_text))
@@ -45,9 +47,9 @@ class Formatter(object):
 
         return format
 
-    def dump_format(self, fields=["message", "source", "facility"]):
+    def dump_format(self, fields=[utils.MESSAGE_FIELD, utils.SOURCE_FIELD, utils.FACILITY_FIELD]):
         def format(entry):
-            timestamp = entry.timestamp.to('local').format("YYYY-MM-DD HH:mm:ss.SSS")
+            timestamp = entry.timestamp.to('local').format(utils.DEFAULT_DATE_FORMAT)
             return timestamp+";"+";".join(map(lambda f: "'{val}'".format(val=entry.message_dict.get(f, "")), fields))
         return format
 

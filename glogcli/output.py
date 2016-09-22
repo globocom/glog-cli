@@ -2,8 +2,8 @@
 from __future__ import division, print_function
 import time
 import arrow
-from graylog_api import SearchRange
-
+from glogcli.graylog_api import SearchRange
+from glogcli.utils import LOCAL_TIMEZONE
 
 class SimpleBuffer(object):
     
@@ -41,7 +41,7 @@ class LogPrinter(object):
             try:
                 while True:
                     result = self.run_logprint(api, query, formatter, follow=False, output=output)
-                    new_range = SearchRange(to_time=arrow.now('local'), from_time=arrow.now('local').replace(seconds=-5))
+                    new_range = SearchRange(to_time=arrow.now(LOCAL_TIMEZONE), from_time=arrow.now(LOCAL_TIMEZONE).replace(seconds=-5))
                     query = query.copy_with_range(new_range)
                     time.sleep(interval/1000.0)
             except KeyboardInterrupt:

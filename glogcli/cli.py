@@ -11,6 +11,7 @@ from glogcli.graylog_api import SearchRange, SearchQuery
 from glogcli.utils import cli_error, api_from_config, api_from_host, get_config, get_message_format_template
 from glogcli.output import LogPrinter
 from glogcli.formats import Formatter
+from glogcli.utils import UTF8
 
 @click.command()
 @click.option("-h", "--host", default=None, help="Your graylog node's host")
@@ -116,7 +117,7 @@ def run(host,
             streams = gl_api.streams()["streams"]
             click.echo("Please select a stream to query:")
             for i, stream in enumerate(streams):
-                click.echo("{}: Stream '{}' (id: {})".format(i, stream["title"].encode("utf-8"), stream["id"].encode("utf-8")))
+                click.echo("{}: Stream '{}' (id: {})".format(i, stream["title"].encode(UTF8), stream["id"].encode(UTF8)))
             i = click.prompt("Enter stream number:", type=int, default=0)
             stream = streams[i]["id"]
         stream_filter = "streams:{}".format(stream)
@@ -124,11 +125,11 @@ def run(host,
     if saved_query:
         searches = gl_api.get_saved_queries()["searches"]
         for i, search in enumerate(searches):
-            click.echo("{}: Query '{}' (query: {})".format(i, search["title"].encode("utf-8"), search["query"]["query"].encode("utf-8") or "*"))
+            click.echo("{}: Query '{}' (query: {})".format(i, search["title"].encode(UTF8), search["query"]["query"].encode(UTF8) or "*"))
         i = click.prompt("Enter query number:", type=int, default=0)
         search = searches[i]
-        query = search['query']['query'].encode("utf-8") or '*'
-        fields = search['query']['fields'].encode("utf-8").split(',')
+        query = search['query']['query'].encode(UTF8) or '*'
+        fields = search['query']['fields'].encode(UTF8).split(',')
 
     q = SearchQuery(search_range=sr, query=query, limit=limit, filter=stream_filter, fields=fields, sort=sort, ascending=asc)
 

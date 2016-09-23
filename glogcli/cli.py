@@ -26,7 +26,7 @@ from glogcli.formats import FormatterFactory
 @click.option("-f", "--follow", default=False, is_flag=True, help="Poll the logging server for new logs matching the query (sets search from to now, limit to None)")
 @click.option("-n", "--limit", default=100, help="Limit the number of results (default: 100)")
 @click.option("-a", "--latency", default=2, help="Latency of polling queries (default: 2)")
-@click.option("-s", "--stream", default=None, help="Stream ID of the stream to query (default: no stream filter)")
+@click.option("-st", "--stream", default=None, help="Stream ID of the stream to query (default: no stream filter)")
 @click.option('--field', multiple=True, help="Fields to include in the query result")
 @click.option('--sort', '-s', default=None, help="Field used for sorting (default: timestamp)")
 @click.option("--asc/--desc", default=False, help="Sort ascending / descending")

@@ -195,6 +195,31 @@ class GraylogAPI(object):
 
         return SearchResult(result)
 
+    def get_saved_query(self):
+        searches = self.get_saved_queries()["searches"]
+        for i, search in enumerate(searches):
+            click.echo("{}: Query '{}' (query: {})".format(i, search["title"].encode(utils.UTF8),
+                                                           search["query"]["query"].encode(utils.UTF8) or "*"))
+        i = click.prompt("Enter query number:", type=int, default=0)
+        search = searches[i]
+        query = search['query']['query'].encode(utils.UTF8) or '*'
+        fields = search['query']['fields'].encode(utils.UTF8).split(',')
+        return query, fields
+
+    def get_stream(self, stream, userinfo):
+        stream_filter = None
+        if stream or (userinfo["permissions"] != ["*"] and self.default_stream is None):
+            if not stream:
+                streams = self.streams()["streams"]
+                click.echo("Please select a stream to query:")
+                for i, stream in enumerate(streams):
+                    click.echo(
+                        "{}: Stream '{}' (id: {})".format(i, stream["title"].encode(utils.UTF8), stream["id"].encode(utils.UTF8)))
+                i = click.prompt("Enter stream number:", type=int, default=0)
+                stream = streams[i]["id"]
+            stream_filter = "streams:{}".format(stream)
+        return stream_filter
+
 
 class GraylogAPIFactory(object):
 
@@ -234,6 +259,10 @@ class GraylogAPIFactory(object):
         return gl_api
 
     @staticmethod
+    def api_from_host(host, port, username, scheme, proxies=None):
+        return GraylogAPI(host=host, port=port, username=username, scheme=scheme, proxies=proxies)
+
+    @staticmethod
     def api_from_config(cfg, env_name="default"):
         section_name = "environment:" + env_name
 
@@ -268,7 +297,3 @@ class GraylogAPIFactory(object):
             default_stream = cfg.get(section_name, utils.DEFAULT_STREAM)
 
         return GraylogAPI(host=host, port=port, username=username, default_stream=default_stream, scheme=scheme, proxies=proxies)
-
-    @staticmethod
-    def api_from_host(host, port, username, scheme, proxies=None):
-        return GraylogAPI(host=host, port=port, username=username, scheme=scheme, proxies=proxies)

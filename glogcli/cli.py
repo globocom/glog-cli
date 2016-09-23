@@ -5,10 +5,9 @@ from __future__ import division, print_function, absolute_import
 import click
 import arrow
 from glogcli.graylog_api import SearchRange, SearchQuery, GraylogAPIFactory
-from glogcli.utils import get_config, get_message_format_template
+from glogcli.utils import get_config
 from glogcli.output import LogPrinter
-from glogcli.formats import Formatter, TailFormatter, DumpFormatter
-from glogcli.utils import UTF8
+from glogcli.formats import FormatterFactory
 
 
 @click.command()
@@ -58,15 +57,9 @@ def run(host,
 
     cfg = get_config()
 
-    gl_api = GraylogAPIFactory.get_graylog_api(cfg, environment, host, password, port, proxy, tls, username)
+    graylog_api = GraylogAPIFactory.get_graylog_api(cfg, environment, host, password, port, proxy, tls, username)
 
     sr = SearchRange(from_time=search_from, to_time=search_to)
-    fields = None
-    if field:
-        fields = list(field)
-
-    if limit <= 0:
-        limit = None
 
     if follow:
         limit = None
@@ -74,40 +67,17 @@ def run(host,
         sr.from_time = arrow.now().replace(seconds=-latency-1)
         sr.to_time = arrow.now().replace(seconds=-latency)
 
-    userinfo = gl_api.user_info()
+    fields = list(field) if field else None
+    limit = None if limit <= 0 else limit
 
-    stream_filter = None
-    if stream or (userinfo["permissions"] != ["*"] and gl_api.default_stream is None):
-        if not stream:
-            streams = gl_api.streams()["streams"]
-            click.echo("Please select a stream to query:")
-            for i, stream in enumerate(streams):
-                click.echo("{}: Stream '{}' (id: {})".format(i, stream["title"].encode(UTF8), stream["id"].encode(UTF8)))
-            i = click.prompt("Enter stream number:", type=int, default=0)
-            stream = streams[i]["id"]
-        stream_filter = "streams:{}".format(stream)
-
+    stream_filter = graylog_api.get_stream(stream, graylog_api.user_info())
     if saved_query:
-        searches = gl_api.get_saved_queries()["searches"]
-        for i, search in enumerate(searches):
-            click.echo("{}: Query '{}' (query: {})".format(i, search["title"].encode(UTF8), search["query"]["query"].encode(UTF8) or "*"))
-        i = click.prompt("Enter query number:", type=int, default=0)
-        search = searches[i]
-        query = search['query']['query'].encode(UTF8) or '*'
-        fields = search['query']['fields'].encode(UTF8).split(',')
+        query, fields = graylog_api.get_saved_query()
 
     q = SearchQuery(search_range=sr, query=query, limit=limit, filter=stream_filter, fields=fields, sort=sort, ascending=asc)
 
-    formatter = get_formatter(cfg, fields, format_template, mode)
-    LogPrinter().run_logprint(gl_api, q, formatter, follow, output)
-
-
-def get_formatter(cfg, fields, format_template, mode):
-    format_template = get_message_format_template(cfg, format_template)
-    if mode == "tail":
-        return TailFormatter(format_template=format_template, fields=fields)
-    elif mode == "dump":
-        return DumpFormatter(format_template=format_template, fields=fields)
+    formatter = FormatterFactory.get_formatter(mode, cfg, format_template, fields)
+    LogPrinter().run_logprint(graylog_api, q, formatter, follow, output)
 
 
 if __name__ == "__main__":

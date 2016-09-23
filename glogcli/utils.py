@@ -32,17 +32,7 @@ DEFAULT_MESSAGE_FORMAT_TEMPLATE = "{host} {level} {timestamp} {facility} {messag
 def get_config():
     config = configparser.ConfigParser()
     config.read(['glogcli.cfg', os.path.expanduser('~/.glogcli.cfg')])
-
     return config
-
-
-def get_message_format_template(cfg, format_template_name):
-    section_name = "format:" + format_template_name
-    try:
-        format = cfg.get(section_name, FORMAT)
-    except:
-        format = DEFAULT_MESSAGE_FORMAT_TEMPLATE
-    return format
 
 
 def cli_error(msg):

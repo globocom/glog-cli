@@ -60,6 +60,25 @@ class DumpFormatter(Formatter):
         return timestamp + ";" + ";".join(map(lambda f: "'{val}'".format(val=entry.message_dict.get(f, "")), self.fields))
 
 
+class FormatterFactory(object):
+
+    @staticmethod
+    def get_formatter(mode, cfg, format_template, fields):
+        format_template = FormatterFactory.get_message_format_template(cfg, format_template)
+        if mode == "tail":
+            return TailFormatter(format_template=format_template, fields=fields)
+        elif mode == "dump":
+            return DumpFormatter(format_template=format_template, fields=fields)
+
+    @staticmethod
+    def get_message_format_template(cfg, format_template_name):
+        section_name = "format:" + format_template_name
+        try:
+            return cfg.get(section_name, utils.FORMAT)
+        except:
+            return utils.DEFAULT_MESSAGE_FORMAT_TEMPLATE
+
+
 class LogLevel(object):
 
     LEVELS = {

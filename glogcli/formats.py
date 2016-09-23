@@ -68,7 +68,7 @@ class LogLevel(object):
         syslog.LOG_WARNING: {'name': 'WARNING', 'color': 'yellow', 'bg_color': None},
         syslog.LOG_NOTICE:  {'name': 'NOTICE', 'color': 'green', 'bg_color': None},
         syslog.LOG_INFO:    {'name': 'INFO', 'color': 'green', 'bg_color': None},
-        syslog.LOG_DEBUG:   {'name': 'DEBUG', 'color': 'blue', 'bg_color': None},
+        syslog.LOG_DEBUG:   {'name': 'DEBUG', 'color': 'cyan', 'bg_color': None},
     }
 
     DEFAULT_CONFIG = {'name': '', 'color': 'green', 'bg_color': None}

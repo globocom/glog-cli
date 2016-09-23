@@ -1,9 +1,9 @@
-
 from __future__ import division, print_function
 import time
 import arrow
 from glogcli.graylog_api import SearchRange
 from glogcli.utils import LOCAL_TIMEZONE
+
 
 class SimpleBuffer(object):
     
@@ -18,7 +18,7 @@ class SimpleBuffer(object):
 
     def is_object_buffered(self, object):
         is_object_buffered = object in self.buffer
-        if (len(self.buffer) > 1000):
+        if len(self.buffer) > 1000:
             self._clean_buffer()
 
         return is_object_buffered
@@ -29,7 +29,7 @@ class LogPrinter(object):
     def __init__(self):
         self.message_buffer = SimpleBuffer()
 
-    def run_logprint(self, api, query, formatter, follow=False, latency=0, output=None, header=None, interval=1000):
+    def run_logprint(self, api, query, formatter, follow=False, output=None, header=None, interval=1000):
         if follow:
             assert query.limit is None
 
@@ -40,7 +40,7 @@ class LogPrinter(object):
 
             try:
                 while True:
-                    result = self.run_logprint(api, query, formatter, follow=False, output=output)
+                    self.run_logprint(api, query, formatter, follow=False, output=output)
                     new_range = SearchRange(to_time=arrow.now(LOCAL_TIMEZONE), from_time=arrow.now(LOCAL_TIMEZONE).replace(seconds=-5))
                     query = query.copy_with_range(new_range)
                     time.sleep(interval/1000.0)
@@ -53,10 +53,10 @@ class LogPrinter(object):
         else:
             result = api.search(query, fetch_all=True)
             formatted_msgs = []
-            for m in result.messages:
-                message_id = m.message_dict.get('_id')
+            for message in result.messages:
+                message_id = message.message_dict.get('_id')
                 if not self.message_buffer.is_object_buffered(message_id):
-                    formatted_msgs.append(formatter(m))
+                    formatted_msgs.append(formatter.format(message))
                     self.message_buffer.insert(message_id)
 
             formatted_msgs.reverse()

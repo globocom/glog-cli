@@ -2,56 +2,62 @@ from __future__ import division, print_function
 from termcolor import colored
 import syslog
 import six
-
 from glogcli import utils
 
 
 class Formatter(object):
 
-    def __init__(self, format_template):
+    def __init__(self, format_template, fields=None, color=True):
         self.format_template = format_template
+        self.color = color
+        self.fields = fields if fields else [utils.MESSAGE, utils.SOURCE, utils.FACILITY]
 
-    def tail_format(self, fields=[utils.SOURCE, utils.FACILITY, utils.LINE, utils.MODULE], color=True):
-        def format(entry):
-            message = entry.message
-            timestamp = entry.timestamp.to('local')
-            host = entry.message_dict.get("source")
-            facility = entry.message_dict.get("facility")
-            local_fields = list(fields)
+    def format(self, entry):
+        raise NotImplementedError()
 
-            if utils.MESSAGE in local_fields:
-                local_fields.remove(utils.MESSAGE)
 
-            field_text = map(lambda f: "{}:{}".format(f, entry.message_dict.get(f, "")), local_fields)
+class TailFormatter(Formatter):
 
-            if six.PY2:
-                try:
-                    message = message.encode(utils.UTF8)
-                except:
-                    pass
+    def format(self, entry):
+        message = entry.message
+        timestamp = entry.timestamp.to("local")
+        host = entry.message_dict.get("source")
+        facility = entry.message_dict.get("facility")
+        local_fields = list(self.fields)
 
-            log_level = LogLevel.find_by_syslog_code(entry.level)
-            message = six.u(message)
-            log = six.u(self.format_template).format(
-                host=host or '',
-                facility=facility or '',
-                timestamp=timestamp.format(utils.DEFAULT_DATE_FORMAT),
-                level=log_level['name'],
-                message=message,
-                field_text="; ".join(field_text))
+        if utils.MESSAGE in local_fields:
+            local_fields.remove(utils.MESSAGE)
 
-            if color:
-                return colored(log, log_level['color'], log_level['bg_color'])
-            else:
-                return log
+        field_text = map(lambda f: "{}:{}".format(f, entry.message_dict.get(f, "")), local_fields)
 
-        return format
+        if six.PY2:
+            try:
+                message = message.encode(utils.UTF8)
+            except:
+                pass
 
-    def dump_format(self, fields=[utils.MESSAGE, utils.SOURCE, utils.FACILITY]):
-        def format(entry):
-            timestamp = entry.timestamp.to('local').format(utils.DEFAULT_DATE_FORMAT)
-            return timestamp+";"+";".join(map(lambda f: "'{val}'".format(val=entry.message_dict.get(f, "")), fields))
-        return format
+        log_level = LogLevel.find_by_syslog_code(entry.level)
+        message = six.u(message)
+        log = six.u(self.format_template).format(
+            host=host or '',
+            facility=facility or '',
+            timestamp=timestamp.format(utils.DEFAULT_DATE_FORMAT),
+            level=log_level['name'],
+            message=message,
+            field_text="; ".join(field_text)
+        )
+
+        if self.color:
+            return colored(log, log_level['color'], log_level['bg_color'])
+        else:
+            return log
+
+
+class DumpFormatter(Formatter):
+
+    def format(self, entry):
+        timestamp = entry.timestamp.to('local').format(utils.DEFAULT_DATE_FORMAT)
+        return timestamp + ";" + ";".join(map(lambda f: "'{val}'".format(val=entry.message_dict.get(f, "")), self.fields))
 
 
 class LogLevel(object):

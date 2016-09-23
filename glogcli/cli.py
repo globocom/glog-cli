@@ -7,7 +7,7 @@ import arrow
 from glogcli.graylog_api import SearchRange, SearchQuery, GraylogAPIFactory
 from glogcli.utils import get_config, get_message_format_template
 from glogcli.output import LogPrinter
-from glogcli.formats import Formatter
+from glogcli.formats import Formatter, TailFormatter, DumpFormatter
 from glogcli.utils import UTF8
 
 
@@ -99,20 +99,15 @@ def run(host,
     q = SearchQuery(search_range=sr, query=query, limit=limit, filter=stream_filter, fields=fields, sort=sort, ascending=asc)
 
     formatter = get_formatter(cfg, fields, format_template, mode)
-    LogPrinter().run_logprint(gl_api, q, formatter, follow, latency, output)
+    LogPrinter().run_logprint(gl_api, q, formatter, follow, output)
 
 
 def get_formatter(cfg, fields, format_template, mode):
     format_template = get_message_format_template(cfg, format_template)
-    formatter = Formatter(format_template)
     if mode == "tail":
-        if fields:
-            formatter = formatter.tail_format(fields)
-        else:
-            formatter = formatter.tail_format()
+        return TailFormatter(format_template=format_template, fields=fields)
     elif mode == "dump":
-        formatter = formatter.dump_format()
-    return formatter
+        return DumpFormatter(format_template=format_template, fields=fields)
 
 
 if __name__ == "__main__":

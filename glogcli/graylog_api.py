@@ -158,7 +158,7 @@ class GraylogAPI(object):
         return self.get(url=("users/" + self.username))
 
     def streams(self):
-        return self.get(url="streams")
+        return self.get(url="streams/enabled")
 
     def get_saved_queries(self):
         return self.get(url="search/saved")

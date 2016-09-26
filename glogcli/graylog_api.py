@@ -231,14 +231,16 @@ class GraylogAPIFactory(object):
         else:
             if host is not None:
                 if username is None:
-                    username = click.prompt(
-                        "Enter username for {host}:{port}".format(host=host, port=port), default=getpass.getuser()
-                    )
+                    username = GraylogAPIFactory.prompt_for_username(host, port)
+
+                if password is None:
+                    password = GraylogAPIFactory.prompt_for_password(host, port, username)
+
                 scheme = "https" if tls else "http"
                 proxies = {scheme: proxy} if proxy else None
 
                 gl_api = GraylogAPIFactory.api_from_host(
-                    host=host, port=port, username=username, scheme=scheme, proxies=proxies
+                    host=host, port=port, username=username, password=password, scheme=scheme, proxies=proxies
                 )
             else:
                 if cfg.has_section("environment:default"):
@@ -246,21 +248,20 @@ class GraylogAPIFactory(object):
                 else:
                     cli_error("Error: No host or environment configuration specified and no default found.")
 
-        if username is not None:
-            gl_api.username = username
-
-        if password is None:
-            prompt_message = "Enter password for {username}@{host}:{port}".format(
-                username=gl_api.username, host=gl_api.host, port=gl_api.port
-            )
-            password = click.prompt(prompt_message, hide_input=True)
-
-        gl_api.password = password
         return gl_api
 
     @staticmethod
-    def api_from_host(host, port, username, scheme, proxies=None):
-        return GraylogAPI(host=host, port=port, username=username, scheme=scheme, proxies=proxies)
+    def prompt_for_username(host, port):
+        return click.prompt("Enter username for {host}:{port}".format(host=host, port=port), default=getpass.getuser())
+
+    @staticmethod
+    def prompt_for_password(host, port, username):
+        prompt_message = "Enter password for {username}@{host}:{port}".format(username=username, host=host, port=port)
+        return click.prompt(prompt_message, hide_input=True)
+
+    @staticmethod
+    def api_from_host(host, port, username, password, scheme, proxies=None):
+        return GraylogAPI(host=host, port=port, username=username, password=password, scheme=scheme, proxies=proxies)
 
     @staticmethod
     def api_from_config(cfg, env_name="default"):
@@ -279,7 +280,9 @@ class GraylogAPIFactory(object):
         if cfg.has_option(section_name, utils.USERNAME):
             username = cfg.get(section_name, utils.USERNAME)
         else:
-            username = getpass.getuser()
+            username = GraylogAPIFactory.prompt_for_username(host, port)
+
+        password = GraylogAPIFactory.prompt_for_password(host, port, username)
 
         scheme = "http"
         if cfg.has_option(section_name, utils.TLS):
@@ -296,4 +299,7 @@ class GraylogAPIFactory(object):
         if cfg.has_option(section_name, utils.DEFAULT_STREAM):
             default_stream = cfg.get(section_name, utils.DEFAULT_STREAM)
 
-        return GraylogAPI(host=host, port=port, username=username, default_stream=default_stream, scheme=scheme, proxies=proxies)
+        return GraylogAPI(
+            host=host, port=port, username=username, password=password,
+            default_stream=default_stream, scheme=scheme, proxies=proxies
+        )

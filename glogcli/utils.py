@@ -8,6 +8,7 @@ except:
 import os
 import sys
 import click
+import keyring
 
 
 DEFAULT_DATE_FORMAT = "YYYY-MM-DD HH:mm:ss.SSS"
@@ -42,3 +43,10 @@ def cli_error(msg):
 
 def _get_host(cfg, section_name):
     return cfg.has_option(section_name, "host")
+
+
+def store_password_in_keyring(host, username, password):
+    keyring.set_password('glog_' + host, username, password)
+
+def get_password_from_keyring(host, username):
+    return keyring.get_password('glog_' + host, username)

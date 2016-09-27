@@ -8,7 +8,7 @@ import six
 import getpass
 from dateutils import datetime_converter
 from glogcli import utils
-from glogcli.utils import cli_error
+from glogcli.utils import cli_error, store_password_in_keyring, get_password_from_keyring
 from glogcli.formats import LogLevel
 
 
@@ -224,7 +224,7 @@ class GraylogAPI(object):
 class GraylogAPIFactory(object):
 
     @staticmethod
-    def get_graylog_api(cfg, environment, host, password, port, proxy, tls, username):
+    def get_graylog_api(cfg, environment, host, password, port, proxy, tls, username, keyring):
         gl_api = None
         if environment is not None:
             gl_api = GraylogAPIFactory.api_from_config(cfg, env_name=environment)
@@ -232,9 +232,6 @@ class GraylogAPIFactory(object):
             if host is not None:
                 if username is None:
                     username = GraylogAPIFactory.prompt_for_username(host, port)
-
-                if password is None:
-                    password = GraylogAPIFactory.prompt_for_password(host, port, username)
 
                 scheme = "https" if tls else "http"
                 proxies = {scheme: proxy} if proxy else None
@@ -247,6 +244,17 @@ class GraylogAPIFactory(object):
                     gl_api = GraylogAPIFactory.api_from_config(cfg)
                 else:
                     cli_error("Error: No host or environment configuration specified and no default found.")
+
+        if not password and keyring:
+            password = get_password_from_keyring(gl_api.host, gl_api.username)
+
+        if not password:
+            password = GraylogAPIFactory.prompt_for_password(gl_api.host, gl_api.port, gl_api.username)
+
+        gl_api.password = password
+
+        if keyring:
+            store_password_in_keyring(gl_api.host, gl_api.username, password)
 
         return gl_api
 
@@ -282,8 +290,6 @@ class GraylogAPIFactory(object):
         else:
             username = GraylogAPIFactory.prompt_for_username(host, port)
 
-        password = GraylogAPIFactory.prompt_for_password(host, port, username)
-
         scheme = "http"
         if cfg.has_option(section_name, utils.TLS):
             tls = cfg.get(section_name, utils.TLS)
@@ -300,6 +306,5 @@ class GraylogAPIFactory(object):
             default_stream = cfg.get(section_name, utils.DEFAULT_STREAM)
 
         return GraylogAPI(
-            host=host, port=port, username=username, password=password,
-            default_stream=default_stream, scheme=scheme, proxies=proxies
+            host=host, port=port, username=username, default_stream=default_stream, scheme=scheme, proxies=proxies
         )

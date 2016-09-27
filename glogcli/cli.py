@@ -18,6 +18,7 @@ from glogcli.formats import FormatterFactory
 @click.option("--tls",  default=False, is_flag=True, help="Uses TLS")
 @click.option("-u", "--username", default=None, help="Your graylog username")
 @click.option("-p", "--password", default=None, help="Your graylog password (default: prompt)")
+@click.option("-k/-nk", "--keyring/--no-keyring", default=False, help="Use keyring to store/retrieve password")
 @click.option("-@", "--search-from", default="5 minutes ago", help="Query range from")
 @click.option("-#", "--search-to", default=None, help="Query range to (default: now)")
 @click.option('--tail', 'mode', flag_value='tail', default=True, help="Show the last n lines for the query (default)")
@@ -40,6 +41,7 @@ def run(host,
         tls,
         username,
         password,
+        keyring,
         search_from,
         search_to,
         mode,
@@ -57,7 +59,7 @@ def run(host,
 
     cfg = get_config()
 
-    graylog_api = GraylogAPIFactory.get_graylog_api(cfg, environment, host, password, port, proxy, tls, username)
+    graylog_api = GraylogAPIFactory.get_graylog_api(cfg, environment, host, password, port, proxy, tls, username, keyring)
 
     sr = SearchRange(from_time=search_from, to_time=search_to)
 

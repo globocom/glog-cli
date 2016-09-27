@@ -102,11 +102,16 @@ class GraylogAPI(object):
         self.port = port
         self.username = username
         self.password = password
+        self.user = None
         self.host_tz = host_tz
         self.default_stream = default_stream
         self.proxies = proxies
         self.get_header = {"Accept": "application/json"}
         self.base_url = "{scheme}://{host}:{port}/api/".format(host=host, port=port, scheme=scheme)
+
+    def update_host_timezone(self, timezone):
+        if timezone:
+            self.host_tz = timezone
 
     def get(self, url, **kwargs):
         params = {}
@@ -155,7 +160,9 @@ class GraylogAPI(object):
         return result
 
     def user_info(self):
-        return self.get(url=("users/" + self.username))
+        if not self.user:
+            self.user = self.get(url=("users/" + self.username))
+        return self.user
 
     def streams(self):
         return self.get(url="streams/enabled")
@@ -255,6 +262,8 @@ class GraylogAPIFactory(object):
 
         if keyring:
             store_password_in_keyring(gl_api.host, gl_api.username, password)
+
+        gl_api.update_host_timezone(gl_api.user_info().get('timezone'))
 
         return gl_api
 

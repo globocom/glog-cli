@@ -15,6 +15,14 @@ class Formatter(object):
     def format(self, entry):
         raise NotImplementedError()
 
+    def encode_message(self, message):
+        if six.PY2:
+            try:
+                message = message.encode(utils.UTF8)
+            except:
+                pass
+        return six.u(message)
+
 
 class TailFormatter(Formatter):
 
@@ -28,24 +36,19 @@ class TailFormatter(Formatter):
         if utils.MESSAGE in local_fields:
             local_fields.remove(utils.MESSAGE)
 
-        field_text = map(lambda f: "{}:{}".format(f, entry.message_dict.get(f, "")), local_fields)
-
-        if six.PY2:
-            try:
-                message = message.encode(utils.UTF8)
-            except:
-                pass
-
         log_level = LogLevel.find_by_syslog_code(entry.level)
-        message = six.u(message)
-        log = six.u(self.format_template).format(
-            host=host or '',
-            facility=facility or '',
-            timestamp=timestamp.format(utils.DEFAULT_DATE_FORMAT),
-            level=log_level['name'],
-            message=message,
-            field_text="; ".join(field_text)
-        )
+        args = {
+            'timestamp': timestamp.format(utils.DEFAULT_DATE_FORMAT),
+            'level': log_level['name'],
+            'message': self.encode_message(message) ,
+            'host': host or '',
+            'facility': facility or ''
+        }
+
+        for field in local_fields:
+            args[field] = entry.message_dict.get(field, '')
+
+        log = six.u(self.format_template).format(**args)
 
         if self.color:
             return colored(log, log_level['color'], log_level['bg_color'])

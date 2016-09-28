@@ -5,6 +5,7 @@ try:
 except:
     from six.moves import configparser
 
+import re
 import os
 import sys
 import click
@@ -48,5 +49,11 @@ def _get_host(cfg, section_name):
 def store_password_in_keyring(host, username, password):
     keyring.set_password('glog_' + host, username, password)
 
+
 def get_password_from_keyring(host, username):
     return keyring.get_password('glog_' + host, username)
+
+
+def extract_fields_from_format(cfg, format_name):
+    fields = re.findall('\{.*?\}', cfg.get("format:" + format_name, FORMAT))
+    return [f[1:-1] for f in fields]

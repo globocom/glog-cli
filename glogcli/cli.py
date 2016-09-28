@@ -8,6 +8,7 @@ from glogcli.graylog_api import SearchRange, SearchQuery, GraylogAPIFactory
 from glogcli.utils import get_config
 from glogcli.output import LogPrinter
 from glogcli.formats import FormatterFactory
+from glogcli import utils
 
 
 @click.command()
@@ -28,11 +29,10 @@ from glogcli.formats import FormatterFactory
 @click.option("-n", "--limit", default=100, help="Limit the number of results (default: 100)")
 @click.option("-a", "--latency", default=2, help="Latency of polling queries (default: 2)")
 @click.option("-st", "--stream", default=None, help="Stream ID of the stream to query (default: no stream filter)")
-@click.option('--field', multiple=True, help="Fields to include in the query result")
 @click.option('--sort', '-s', default=None, help="Field used for sorting (default: timestamp)")
 @click.option("--asc/--desc", default=False, help="Sort ascending / descending")
 @click.option("--proxy", default=None, help="Proxy to use for the http/s request")
-@click.option('-r', '--format-template', default="syslog", help="Message format template for the log (default: syslog format")
+@click.option('-r', '--format-template', default="default", help="Message format template for the log (default: default format")
 @click.argument('query', default="*")
 def run(host,
         environment,
@@ -50,7 +50,6 @@ def run(host,
         limit,
         latency,
         stream,
-        field,
         sort,
         asc,
         proxy,
@@ -69,8 +68,8 @@ def run(host,
         sr.from_time = arrow.now().replace(seconds=-latency-1)
         sr.to_time = arrow.now().replace(seconds=-latency)
 
-    fields = list(field) if field else None
     limit = None if limit <= 0 else limit
+    fields = utils.extract_fields_from_format(cfg, format_template)
 
     stream_filter = graylog_api.get_stream(stream, graylog_api.user_info())
     if saved_query:

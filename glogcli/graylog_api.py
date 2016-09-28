@@ -233,22 +233,23 @@ class GraylogAPIFactory(object):
     @staticmethod
     def get_graylog_api(cfg, environment, host, password, port, proxy, tls, username, keyring):
         gl_api = None
+        port = port or 80
+        scheme = "https" if tls else "http"
+        proxies = {scheme: proxy} if proxy else None
+
         if environment is not None:
-            gl_api = GraylogAPIFactory.api_from_config(cfg, env_name=environment)
+            gl_api = GraylogAPIFactory.api_from_config(cfg, environment, port, proxies, tls, username)
         else:
             if host is not None:
                 if username is None:
                     username = GraylogAPIFactory.prompt_for_username(host, port)
-
-                scheme = "https" if tls else "http"
-                proxies = {scheme: proxy} if proxy else None
 
                 gl_api = GraylogAPIFactory.api_from_host(
                     host=host, port=port, username=username, password=password, scheme=scheme, proxies=proxies
                 )
             else:
                 if cfg.has_section("environment:default"):
-                    gl_api = GraylogAPIFactory.api_from_config(cfg)
+                    gl_api = GraylogAPIFactory.api_from_config(cfg, "default", port, proxies, tls, username)
                 else:
                     cli_error("Error: No host or environment configuration specified and no default found.")
 
@@ -281,7 +282,7 @@ class GraylogAPIFactory(object):
         return GraylogAPI(host=host, port=port, username=username, password=password, scheme=scheme, proxies=proxies)
 
     @staticmethod
-    def api_from_config(cfg, env_name="default"):
+    def api_from_config(cfg, env_name, port, proxies, tls, username):
         section_name = "environment:" + env_name
 
         host = None
@@ -290,25 +291,21 @@ class GraylogAPIFactory(object):
         else:
             cli_error("'host' option is not available in section [%(section_name)s]" % {'section_name': section_name})
 
-        port = 80
-        if cfg.has_option(section_name, utils.PORT):
+        if not port and cfg.has_option(section_name, utils.PORT):
             port = cfg.get(section_name, utils.PORT)
 
-        if cfg.has_option(section_name, utils.USERNAME):
+        if not username and cfg.has_option(section_name, utils.USERNAME):
             username = cfg.get(section_name, utils.USERNAME)
-        else:
+        elif not username:
             username = GraylogAPIFactory.prompt_for_username(host, port)
 
-        scheme = "http"
-        if cfg.has_option(section_name, utils.TLS):
+        if not tls and cfg.has_option(section_name, utils.TLS):
             tls = cfg.get(section_name, utils.TLS)
-            if tls.lower() == "true" or tls is True:
-                scheme = "https"
 
-        if cfg.has_option(section_name, utils.PROXY):
+        scheme = "https" if tls else "http"
+
+        if not proxies and cfg.has_option(section_name, utils.PROXY):
             proxies = {scheme: cfg.get(section_name, utils.PROXY)}
-        else:
-            proxies = None
 
         default_stream = None
         if cfg.has_option(section_name, utils.DEFAULT_STREAM):

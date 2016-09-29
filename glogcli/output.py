@@ -61,14 +61,14 @@ class LogPrinter(object):
 
             formatted_msgs.reverse()
 
-            if output is None:
-                for msg in formatted_msgs:
-                    print(msg)
-            else:
-                if isinstance(output, basestring):
-                    with open(output, "a") as f:
-                        f.writelines(formatted_msgs)
+            if formatted_msgs:
+                if output is None:
+                    for msg in formatted_msgs:
+                        print(msg)
                 else:
-                    output.writelines(formatted_msgs)
-
+                    if isinstance(output, basestring):
+                        with open(output, "a") as f:
+                            f.writelines('\n'.join(formatted_msgs) + '\n')
+                    else:
+                        output.writelines('\n'.join(formatted_msgs)+ '\n')
             return result

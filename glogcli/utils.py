@@ -30,7 +30,7 @@ HOST = "host"
 FORMAT = "format"
 PROXY = "proxy"
 DEFAULT_STREAM = "default_stream"
-DEFAULT_MESSAGE_FORMAT_TEMPLATE = "{host} {level} {timestamp} {facility} {message}"
+DEFAULT_MESSAGE_FORMAT_TEMPLATE = "{source} {level} {timestamp} {facility} {message}"
 
 
 def get_config():

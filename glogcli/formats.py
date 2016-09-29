@@ -7,10 +7,12 @@ from glogcli import utils
 
 class Formatter(object):
 
+    DEFAULT_FIELDS = [utils.TIMESTAMP, utils.LEVEL, utils.MESSAGE, utils.SOURCE, utils.FACILITY]
+
     def __init__(self, format_template, fields=None, color=True):
         self.format_template = format_template
         self.color = color
-        self.fields = fields if fields else [utils.MESSAGE, utils.SOURCE, utils.FACILITY]
+        self.fields = fields if fields else self.DEFAULT_FIELDS
 
     def format(self, entry):
         raise NotImplementedError()

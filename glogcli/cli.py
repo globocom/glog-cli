@@ -24,6 +24,7 @@ from glogcli import utils
 @click.option("-#", "--search-to", default=None, help="Query range to (default: now)")
 @click.option('--tail', 'mode', flag_value='tail', default=True, help="Show the last n lines for the query (default)")
 @click.option('-d', '--dump', 'mode', flag_value='dump', help="Print the query result as a csv")
+@click.option('--fields', default=None, help="Comma separeted fields to be printed in the csv. ", callback=lambda ctx, param, v: v.split(',') if v else None)
 @click.option('-o', '--output', default=None, help="Output logs to file (only tail/dump mode)")
 @click.option("-f", "--follow", default=False, is_flag=True, help="Poll the logging server for new logs matching the query (sets search from to now, limit to None)")
 @click.option("-n", "--limit", default=100, help="Limit the number of results (default: 100)")
@@ -45,6 +46,7 @@ def run(host,
         search_from,
         search_to,
         mode,
+        fields,
         output,
         follow,
         limit,
@@ -69,7 +71,7 @@ def run(host,
         sr.to_time = arrow.now().replace(seconds=-latency)
 
     limit = None if limit <= 0 else limit
-    fields = utils.extract_fields_from_format(cfg, format_template)
+    fields = fields if mode == 'dump' else utils.extract_fields_from_format(cfg, format_template)
 
     stream_filter = graylog_api.get_stream(stream, graylog_api.user_info())
     if saved_query:

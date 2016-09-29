@@ -29,24 +29,22 @@ class TailFormatter(Formatter):
     def format(self, entry):
         message = entry.message
         timestamp = entry.timestamp.to("local")
-        host = entry.message_dict.get("source")
+        source = entry.message_dict.get("source")
         facility = entry.message_dict.get("facility")
-        local_fields = list(self.fields)
-
-        if utils.MESSAGE in local_fields:
-            local_fields.remove(utils.MESSAGE)
+        custom_fields = list(self.fields)
 
         log_level = LogLevel.find_by_syslog_code(entry.level)
         args = {
             'timestamp': timestamp.format(utils.DEFAULT_DATE_FORMAT),
             'level': log_level['name'],
-            'message': self.encode_message(message) ,
-            'host': host or '',
+            'message': self.encode_message(message),
+            'source': source or '',
             'facility': facility or ''
         }
 
-        for field in local_fields:
-            args[field] = entry.message_dict.get(field, '')
+        for field in custom_fields:
+            if field not in self.DEFAULT_FIELDS:
+                args[field] = entry.message_dict.get(field, '')
 
         log = six.u(self.format_template).format(**args)
 
@@ -59,8 +57,16 @@ class TailFormatter(Formatter):
 class DumpFormatter(Formatter):
 
     def format(self, entry):
-        timestamp = entry.timestamp.to('local').format(utils.DEFAULT_DATE_FORMAT)
-        return timestamp + ";" + ";".join(map(lambda f: "'{val}'".format(val=entry.message_dict.get(f, "")), self.fields))
+        formatted_fields = dict()
+        for field in self.fields:
+            if field == 'timestamp':
+                field_value = entry.timestamp.to('local').format(utils.DEFAULT_DATE_FORMAT)
+            elif field == 'level':
+                field_value = LogLevel.find_by_syslog_code(entry.level).get('name')
+            else:
+                field_value = entry.message_dict.get(field, "")
+            formatted_fields[field] = field_value
+        return ";".join(map(lambda f: "'{val}'".format(val=formatted_fields.get(f)), self.fields))
 
 
 class FormatterFactory(object):

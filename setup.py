@@ -42,7 +42,7 @@ setup(
     author="Sinval Vieira Mendes Neto",
     author_email='sinvalneto01@gmail.com',
     url='https://github.com/globocom/glog-cli',
-    download_url = 'https://github.com/globocom/glog-cli/tarball/0.4',
+    download_url = 'https://github.com/globocom/glog-cli/tarball/0.5',
     packages=[
         'glogcli',
     ],
@@ -59,7 +59,7 @@ setup(
     zip_safe=False,
     keywords='glogcli',
     classifiers=[
-        'Development Status ::Pre-Alpha',
+        'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Apache Software License',
         'Natural Language :: English',

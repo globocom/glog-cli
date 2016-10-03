@@ -28,7 +28,6 @@ requirements = [
     'termcolor==1.1.0',
     'six==1.9.0',
     'pytest==2.9.2',
-    # TODO: put package requirements here
 ]
 
 test_requirements = [
@@ -37,7 +36,7 @@ test_requirements = [
 
 setup(
     name='glogcli',
-    version='0.4.0',
+    version='0.5.0',
     description="Graylog command line interface.",
     long_description=readme + '\n\n' + history,
     author="Sinval Vieira Mendes Neto",
@@ -60,17 +59,13 @@ setup(
     zip_safe=False,
     keywords='glogcli',
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status ::Pre-Alpha',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Apache Software License',
         'Natural Language :: English',
         "Programming Language :: Python :: 2",
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
     ],
     test_suite='tests',
     tests_require=test_requirements

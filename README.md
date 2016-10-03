@@ -83,6 +83,7 @@ Here is a template for your glogcli.cfg file:
     
     [format:long]
     format=time: [{timestamp}] level: {level} msg: {message} tags: {tags}
+    color=false
 
 Please run the *help* command to more detailed information about all the client features.
 	
@@ -120,4 +121,5 @@ Please run the *help* command to more detailed information about all the client 
 	  --proxy TEXT                    Proxy to use for the http/s request
 	  -r, --format-template TEXT      Message format template for the log
 	                                  (default: default format
+	  --no-color                      Don't show colored logs
 	  --help                          Show this message and exit.

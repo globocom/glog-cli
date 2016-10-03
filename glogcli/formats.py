@@ -74,10 +74,10 @@ class DumpFormatter(Formatter):
 class FormatterFactory(object):
 
     @staticmethod
-    def get_formatter(mode, cfg, format_template, fields):
+    def get_formatter(mode, cfg, format_template, fields, color):
         format_template = FormatterFactory.get_message_format_template(cfg, format_template)
         if mode == "tail":
-            return TailFormatter(format_template=format_template, fields=fields)
+            return TailFormatter(format_template=format_template, fields=fields, color=color)
         elif mode == "dump":
             return DumpFormatter(format_template=format_template, fields=fields)
 

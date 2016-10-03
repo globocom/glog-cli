@@ -28,6 +28,7 @@ PORT = "port"
 TLS = "tls"
 HOST = "host"
 FORMAT = "format"
+COLOR = "color"
 PROXY = "proxy"
 DEFAULT_STREAM = "default_stream"
 DEFAULT_MESSAGE_FORMAT_TEMPLATE = "{source} {level} {timestamp} {facility} {message}"
@@ -59,3 +60,12 @@ def get_password_from_keyring(host, username):
 def extract_fields_from_format(cfg, format_name):
     fields = re.findall('\{.*?\}', cfg.get("format:" + format_name, FORMAT))
     return [f[1:-1] for f in fields]
+
+
+def get_color_option(cfg, format_name, no_color):
+    if no_color:
+        return False
+    if cfg.has_option("format:" + format_name, COLOR):
+        return cfg.get("format:" + format_name, COLOR) == 'true'
+    else:
+        return True

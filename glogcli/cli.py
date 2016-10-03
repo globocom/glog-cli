@@ -5,7 +5,7 @@ from __future__ import division, print_function, absolute_import
 import click
 import arrow
 from glogcli.graylog_api import SearchRange, SearchQuery, GraylogAPIFactory
-from glogcli.utils import get_config
+from glogcli.utils import get_config, get_color_option
 from glogcli.output import LogPrinter
 from glogcli.formats import FormatterFactory
 from glogcli import utils
@@ -34,6 +34,7 @@ from glogcli import utils
 @click.option("--asc/--desc", default=False, help="Sort ascending / descending")
 @click.option("--proxy", default=None, help="Proxy to use for the http/s request")
 @click.option('-r', '--format-template', default="default", help="Message format template for the log (default: default format")
+@click.option("--no-color", default=False, is_flag=True, help="Don't show colored logs")
 @click.argument('query', default="*")
 def run(host,
         environment,
@@ -56,6 +57,7 @@ def run(host,
         asc,
         proxy,
         format_template,
+        no_color,
         query):
 
     cfg = get_config()
@@ -72,6 +74,7 @@ def run(host,
 
     limit = None if limit <= 0 else limit
     fields = fields if mode == 'dump' else utils.extract_fields_from_format(cfg, format_template)
+    color = get_color_option(cfg, format_template, no_color)
 
     stream_filter = graylog_api.get_stream(stream, graylog_api.user_info())
     if saved_query:
@@ -79,7 +82,7 @@ def run(host,
 
     q = SearchQuery(search_range=sr, query=query, limit=limit, filter=stream_filter, fields=fields, sort=sort, ascending=asc)
 
-    formatter = FormatterFactory.get_formatter(mode, cfg, format_template, fields)
+    formatter = FormatterFactory.get_formatter(mode, cfg, format_template, fields, color)
     LogPrinter().run_logprint(graylog_api, q, formatter, follow, output)
 
 

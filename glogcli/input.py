@@ -7,19 +7,27 @@ class CliInterface(object):
 
     @staticmethod
     def select_stream(graylog_api, stream):
-        stream_filter = None
-        if stream or (graylog_api.user["permissions"] != ["*"] and graylog_api.default_stream is None):
-            if not stream:
-                streams = graylog_api.streams()["streams"]
-                click.echo("Please select a stream to query:")
-                for i, stream in enumerate(streams):
-                    stream_id = stream["id"].encode(utils.UTF8)
-                    message = "{}: Stream '{}' (id: {})".format(i, stream["title"].encode(utils.UTF8), stream_id)
-                    click.echo(message)
-                stream_index = click.prompt("Enter stream number:", type=int, default=0)
+        is_admin = graylog_api.user["permissions"] == ["*"] or 'Admin' in graylog_api.user["roles"]
+        stream = stream if stream is not None else graylog_api.default_stream
+
+        if not stream:
+            streams = graylog_api.streams()["streams"]
+            click.echo("Please select a stream to query:")
+            for i, st in enumerate(streams):
+                stream_id = st["id"].encode(utils.UTF8)
+                message = "{}: Stream '{}' (id: {})".format(i, st["title"].encode(utils.UTF8), stream_id)
+                click.echo(message)
+
+            if is_admin:
+                message = "{}: Stream '{}'".format(len(streams), 'All Streams')
+                click.echo(message)
+
+            stream_index = click.prompt("Enter stream number:", type=int, default=0)
+            if stream_index != len(streams):
                 stream = streams[stream_index]["id"]
-            stream_filter = "streams:{}".format(stream)
-        return stream_filter
+
+        if stream and stream != '*':
+            return "streams:{}".format(stream)
 
     @staticmethod
     def select_saved_query(graylog_api):

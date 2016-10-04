@@ -7,6 +7,7 @@ import arrow
 from glogcli.graylog_api import SearchRange, SearchQuery, GraylogAPIFactory
 from glogcli.utils import get_config, get_color_option
 from glogcli.output import LogPrinter
+from glogcli.input import CliInterface
 from glogcli.formats import FormatterFactory
 from glogcli import utils
 
@@ -76,9 +77,9 @@ def run(host,
     fields = fields if mode == 'dump' else utils.extract_fields_from_format(cfg, format_template)
     color = get_color_option(cfg, format_template, no_color)
 
-    stream_filter = graylog_api.get_stream(stream, graylog_api.user_info())
+    stream_filter = CliInterface.select_stream(graylog_api, stream)
     if saved_query:
-        query, fields = graylog_api.get_saved_query()
+        query, fields = CliInterface.select_saved_query(graylog_api)
 
     q = SearchQuery(search_range=sr, query=query, limit=limit, filter=stream_filter, fields=fields, sort=sort, ascending=asc)
 

@@ -5,11 +5,11 @@ import requests
 import arrow
 import syslog
 import six
-import getpass
 from dateutils import datetime_converter
 from glogcli import utils
 from glogcli.utils import cli_error, store_password_in_keyring, get_password_from_keyring
 from glogcli.formats import LogLevel
+from glogcli.input import CliInterface
 
 
 class Message(object):
@@ -202,31 +202,6 @@ class GraylogAPI(object):
 
         return SearchResult(result)
 
-    def get_saved_query(self):
-        searches = self.get_saved_queries()["searches"]
-        for i, search in enumerate(searches):
-            click.echo("{}: Query '{}' (query: {})".format(i, search["title"].encode(utils.UTF8),
-                                                           search["query"]["query"].encode(utils.UTF8) or "*"))
-        i = click.prompt("Enter query number:", type=int, default=0)
-        search = searches[i]
-        query = search['query']['query'].encode(utils.UTF8) or '*'
-        fields = search['query']['fields'].encode(utils.UTF8).split(',')
-        return query, fields
-
-    def get_stream(self, stream, userinfo):
-        stream_filter = None
-        if stream or (userinfo["permissions"] != ["*"] and self.default_stream is None):
-            if not stream:
-                streams = self.streams()["streams"]
-                click.echo("Please select a stream to query:")
-                for i, stream in enumerate(streams):
-                    click.echo(
-                        "{}: Stream '{}' (id: {})".format(i, stream["title"].encode(utils.UTF8), stream["id"].encode(utils.UTF8)))
-                i = click.prompt("Enter stream number:", type=int, default=0)
-                stream = streams[i]["id"]
-            stream_filter = "streams:{}".format(stream)
-        return stream_filter
-
 
 class GraylogAPIFactory(object):
 
@@ -242,7 +217,7 @@ class GraylogAPIFactory(object):
         else:
             if host is not None:
                 if username is None:
-                    username = GraylogAPIFactory.prompt_for_username(host, port)
+                    username = CliInterface.prompt_username(host, port)
 
                 gl_api = GraylogAPIFactory.api_from_host(
                     host=host, port=port, username=username, password=password, scheme=scheme, proxies=proxies
@@ -257,7 +232,7 @@ class GraylogAPIFactory(object):
             password = get_password_from_keyring(gl_api.host, gl_api.username)
 
         if not password:
-            password = GraylogAPIFactory.prompt_for_password(gl_api.host, gl_api.port, gl_api.username)
+            password = CliInterface.prompt_password(gl_api.host, gl_api.port, gl_api.username)
 
         gl_api.password = password
 
@@ -267,15 +242,6 @@ class GraylogAPIFactory(object):
         gl_api.update_host_timezone(gl_api.user_info().get('timezone'))
 
         return gl_api
-
-    @staticmethod
-    def prompt_for_username(host, port):
-        return click.prompt("Enter username for {host}:{port}".format(host=host, port=port), default=getpass.getuser())
-
-    @staticmethod
-    def prompt_for_password(host, port, username):
-        prompt_message = "Enter password for {username}@{host}:{port}".format(username=username, host=host, port=port)
-        return click.prompt(prompt_message, hide_input=True)
 
     @staticmethod
     def api_from_host(host, port, username, password, scheme, proxies=None):
@@ -297,7 +263,7 @@ class GraylogAPIFactory(object):
         if not username and cfg.has_option(section_name, utils.USERNAME):
             username = cfg.get(section_name, utils.USERNAME)
         elif not username:
-            username = GraylogAPIFactory.prompt_for_username(host, port)
+            username = CliInterface.prompt_username(host, port)
 
         if not tls and cfg.has_option(section_name, utils.TLS):
             tls = cfg.get(section_name, utils.TLS)

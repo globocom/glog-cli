@@ -20,9 +20,6 @@ class Message(object):
         self.level = self.message_dict.get("level", syslog.LOG_INFO)
         self.message = self.message_dict.get(utils.MESSAGE, "")
 
-    def simple_formatted(self):
-        return "[{}] {}: {}".format(self.timestamp, self.level, self.message)
-
 
 class SearchResult(object):
 
@@ -36,11 +33,7 @@ class SearchResult(object):
         self.range_duration = result_dict.get("time", None)
         self.fields = result_dict.get("fields", [])
         self.total_results = result_dict.get("total_results", None)
-
         self.messages = list(map(Message, result_dict.get("messages", [])))
-
-    def simple_formatted(self):
-        return "\n".join(map(lambda m: m.simple_formatted(), self.messages))
 
 
 class SearchRange(object):

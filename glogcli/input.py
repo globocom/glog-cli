@@ -1,5 +1,6 @@
 import getpass
 import click
+from glogcli.utils import cli_error
 from glogcli import utils
 
 
@@ -23,8 +24,11 @@ class CliInterface(object):
                 click.echo(message)
 
             stream_index = click.prompt("Enter stream number:", type=int, default=0)
-            if stream_index != len(streams):
+
+            if stream_index < len(streams):
                 stream = streams[stream_index]["id"]
+            elif stream_index >= len(streams) and not is_admin:
+                CliInterface.select_stream(graylog_api, stream)
 
         if stream and stream != '*':
             return "streams:{}".format(stream)
@@ -32,6 +36,9 @@ class CliInterface(object):
     @staticmethod
     def select_saved_query(graylog_api):
         searches = graylog_api.get_saved_queries()["searches"]
+        if not searches:
+            cli_error("You have no saved queries to display.")
+
         for i, search in enumerate(searches):
             search_title = search["title"].encode(utils.UTF8)
             query = search["query"]["query"].encode(utils.UTF8) or "*"

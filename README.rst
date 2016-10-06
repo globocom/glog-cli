@@ -52,6 +52,15 @@ Once you've installed glogcli, it's time to run some commands, try one of the fo
 
 > glocli -e dev -r short
 
+-
+
+> glocli -e dev -r short -st mystreamid
+
+-
+
+> glocli -e dev -r short -st '*'
+
+
 
 Configuration
 --------
@@ -66,6 +75,7 @@ Here is a template for your glogcli.cfg file:
     host=mygraylogserver.com
     port=80
     username=john.doe
+    default_stream=*
 
     [environment:dev]
     host=mygraylogserver.dev.com

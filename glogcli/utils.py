@@ -58,8 +58,9 @@ def get_password_from_keyring(host, username):
 
 
 def extract_fields_from_format(cfg, format_name):
-    fields = re.findall('\{.*?\}', cfg.get("format:" + format_name, FORMAT))
-    return [f[1:-1] for f in fields]
+    if cfg.has_option("format:" + format_name, FORMAT):
+        fields = re.findall('\{.*?\}', cfg.get("format:" + format_name, FORMAT))
+        return [f[1:-1] for f in fields]
 
 
 def get_color_option(cfg, format_name, no_color):

@@ -75,7 +75,7 @@ Here is a template for your glogcli.cfg file:
     host=mygraylogserver.com
     port=80
     username=john.doe
-    default_stream=*
+    default_stream=57e14cde6fb78216a60d35e7
 
     [environment:dev]
     host=mygraylogserver.dev.com

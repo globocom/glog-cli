@@ -4,7 +4,7 @@ Glog-CLI
 
 * Free software: Apache Software License 2.0
 
-Glog-CLI is an opensource command line interface for Graylog2.
+Glog-CLI is an open source command line interface for Graylog2.
 
 Instalation
 --------

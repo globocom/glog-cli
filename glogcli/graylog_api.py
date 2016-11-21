@@ -118,6 +118,9 @@ class GraylogAPI(object):
         r = requests.get(self.base_url + url, params=params, headers=self.get_header, auth=(self.username, self.password), proxies=self.proxies)
         if r.status_code == requests.codes.ok:
             return r.json()
+        elif r.status_code == 401:
+            click.echo("API error: {} Message: User authorization denied.".format(r.status_code))
+            exit()
         else:
             click.echo("API error: Status: {} Message: {}".format(r.status_code, r.content))
             exit()

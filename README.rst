@@ -4,7 +4,7 @@ Glog-CLI
 
 * Free software: Apache Software License 2.0
 
-Glog-CLI is an opensource command line interface for Graylog2.
+Glog-CLI is an open source command line interface for Graylog2.
 
 Instalation
 --------
@@ -38,27 +38,31 @@ Once you've installed glogcli, it's time to run some commands, try one of the fo
 
 -
 
-> glocli -h mygraylog.server.com -u john.doe -p password "level:DEBUG"
+> glogcli -h mygraylog.server.com -u john.doe -p password "level:DEBUG"
 
 -
 
-> glocli -h mygraylog.server.com -u john.doe -p password "level:DEBUG" -f
+> glogcli -h mygraylog.server.com -u john.doe -p password "level:DEBUG" -f
 
 -
 
-> glocli -h mygraylog.server.com -u john.doe -p password "level:DEBUG" -d --fields timestamp,level,message -o dump.csv 
+> glogcli -h mygraylog.server.com -u john.doe -p password "level:DEBUG" -d --fields timestamp,level,message -o dump.csv
 
 -
 
-> glocli -e dev -r short
+> glogcli -h mygraylog.server.com -u john-doe -p password -@ "2016-11-21 00:00:00" -# "2016-11-21 01:00:00" 'message:blabla'
 
 -
 
-> glocli -e dev -r short -st mystreamid
+> glogcli -e dev -r short
 
 -
 
-> glocli -e dev -r short -st '*'
+> glogcli -e dev -r short -st mystreamid
+
+-
+
+> glogcli -e dev -r short -st '*'
 
 
 
@@ -75,7 +79,7 @@ Here is a template for your glogcli.cfg file:
     host=mygraylogserver.com
     port=80
     username=john.doe
-    default_stream=*
+    default_stream=57e14cde6fb78216a60d35e7
 
     [environment:dev]
     host=mygraylogserver.dev.com

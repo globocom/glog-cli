@@ -24,7 +24,10 @@ or you can even install it from a GitHub clone:
 
 Usage
 --------
-Once you've installed glogcli, it's time to run some commands, try one of the following:
+Glog-CLI enables you to make searche using the official Graylog search query language, to understand how to make queries 
+please see the documentation [http://docs.graylog.org/en/2.1/pages/queries.html].
+
+Once you've installed the tool now it's time to run some commands, the following:
 
 > glogcli -h mygraylog.server.com -u john.doe -p password -@ "10 minutes ago" "source:my-app-server"
 

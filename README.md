@@ -24,7 +24,7 @@ or you can even install it from a GitHub clone:
 
 Usage
 --------
-Glog-CLI enables you to make searche using the official Graylog search query language, to understand how to make queries 
+Glog-CLI enables you to make searches using the official Graylog query language. To understand how to make queries 
 please see the documentation [http://docs.graylog.org/en/2.1/pages/queries.html].
 
 Once you've installed the tool now it's time to run some commands, the following:

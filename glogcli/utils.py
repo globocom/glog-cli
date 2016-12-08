@@ -34,6 +34,9 @@ DEFAULT_STREAM = "default_stream"
 DEFAULT_MESSAGE_FORMAT_TEMPLATE = "{source} {level} {timestamp} {facility} {message}"
 
 
+def get_glogcli_version():
+    return "0.7.0"
+
 def get_config():
     config = configparser.ConfigParser()
     try:
@@ -49,7 +52,6 @@ def get_config():
                    "[environment:dev]\n"
                    "host=mygraylogserver.dev.com\n"
                    "port=80\n"
-                   "tls=true\n"
                    "proxy=mycompanyproxy.com\n"
                    "username=john.doe\n"
                    "default_stream=57e14cde6fb78216a60d35e8\n"

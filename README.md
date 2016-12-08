@@ -87,7 +87,6 @@ Here is a template for your glogcli.cfg file:
     [environment:dev]
     host=mygraylogserver.dev.com
     port=80
-    tls=true
     proxy=mycompanyproxy.com
     username=john.doe
     default_stream=57e14cde6fb78216a60d35e8
@@ -109,11 +108,11 @@ Please run the *help* command to more detailed information about all the client 
     Usage: glogcli [OPTIONS] [QUERY]
 
 	Options:
+	  -v, --version TEXT              Prints your glogcli version
 	  -h, --host TEXT                 Your graylog node's host
 	  -e, --environment TEXT          Label of a preconfigured graylog node
 	  -sq, --saved-query              List user saved queries for selection
-	  --port INTEGER                  Your graylog port (default: 80)
-	  --tls                           Uses TLS
+	  --port INTEGER                  Your graylog port
 	  -u, --username TEXT             Your graylog username
 	  -p, --password TEXT             Your graylog password (default: prompt)
 	  -k, --keyring / -nk, --no-keyring

@@ -5,7 +5,7 @@ from __future__ import division, print_function, absolute_import
 import click
 import arrow
 from glogcli.graylog_api import SearchRange, SearchQuery, GraylogAPIFactory
-from glogcli.utils import get_config, get_color_option
+from glogcli.utils import get_config, get_color_option, get_glogcli_version
 from glogcli.output import LogPrinter
 from glogcli.input import CliInterface
 from glogcli.formats import FormatterFactory
@@ -13,10 +13,11 @@ from glogcli import utils
 
 
 @click.command()
+@click.option("-v", "--version", default=False, is_flag=True, help="Prints your glogcli version")
 @click.option("-h", "--host", default=None, help="Your graylog node's host")
-@click.option("-e", "--environment", default=None,  help="Label of a preconfigured graylog node")
+@click.option("-e", "--environment", default='default',  help="Label of a preconfigured graylog node")
 @click.option("-sq", "--saved-query", is_flag=True, default=False, help="List user saved queries for selection")
-@click.option("--port", default=80, help="Your graylog port (default: 80)")
+@click.option("--port", default=None, help="Your graylog port")
 @click.option("--tls",  default=False, is_flag=True, help="Uses TLS")
 @click.option("-u", "--username", default=None, help="Your graylog username")
 @click.option("-p", "--password", default=None, help="Your graylog password (default: prompt)")
@@ -37,7 +38,8 @@ from glogcli import utils
 @click.option('-r', '--format-template', default="default", help="Message format template for the log (default: default format")
 @click.option("--no-color", default=False, is_flag=True, help="Don't show colored logs")
 @click.argument('query', default="*")
-def run(host,
+def run(version,
+        host,
         environment,
         saved_query,
         port,
@@ -62,6 +64,12 @@ def run(host,
         query):
 
     cfg = get_config()
+
+    if version:
+        click.echo(get_glogcli_version())
+
+    if cfg.has_option(section='environment:%s' % environment, option='port') and port is None:
+        port = cfg.get(section='environment:%s' % environment, option='port')
 
     graylog_api = GraylogAPIFactory.get_graylog_api(cfg, environment, host, password, port, proxy, tls, username, keyring)
 

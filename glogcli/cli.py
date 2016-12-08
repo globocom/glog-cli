@@ -67,9 +67,6 @@ def run(version,
 
     cfg = get_config(config_file_path=config)
 
-    if no_tls is False:
-        click.echo("Selected protocol is HTTPS, using port 443 to call Graylog.")
-
     if version:
         click.echo(get_glogcli_version())
         exit()

@@ -35,7 +35,7 @@ DEFAULT_MESSAGE_FORMAT_TEMPLATE = "{source} {level} {timestamp} {facility} {mess
 
 
 def get_glogcli_version():
-    return "0.8.0"
+    return "0.8.1"
 
 def get_config(config_file_path="~/.glogcli.cfg"):
     config = configparser.ConfigParser()

@@ -5,11 +5,6 @@ from glogcli.utils import extract_fields_from_format, get_color_option
 
 class UtilsTestCase(unittest.TestCase):
 
-    def test_extract_fields_from_format(self):
-        cfg = self.mock_config("({timestamp}) {message} [{level}]")
-        fields = extract_fields_from_format(cfg, 'default')
-        self.assertEquals(['timestamp','message', 'level'], fields)
-
     def test_get_color_with_color_option_enabled(self):
         self.assertTrue(get_color_option(self.mock_config('true', True), 'format_name', no_color=False))
         self.assertTrue(get_color_option(self.mock_config('', False), 'format_name', no_color=False))

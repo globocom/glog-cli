@@ -4,7 +4,7 @@
 from setuptools import setup
 
 
-with open('README.md') as readme_file:
+with open('README.rst') as readme_file:
     readme = readme_file.read()
 
 with open('HISTORY.rst') as history_file:
@@ -41,7 +41,7 @@ setup(
     author="Sinval Vieira Mendes Neto",
     author_email='sinvalneto01@gmail.com',
     url='https://github.com/globocom/glog-cli',
-    download_url = 'https://github.com/globocom/glog-cli/tarball/0.5',
+    download_url = 'https://github.com/globocom/glog-cli/tarball/0.7',
     packages=[
         'glogcli',
     ],

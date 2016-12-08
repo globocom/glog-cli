@@ -202,25 +202,33 @@ class GraylogAPI(object):
 class GraylogAPIFactory(object):
 
     @staticmethod
-    def get_graylog_api(cfg, environment, host, password, port, proxy, tls, username, keyring):
+    def get_graylog_api(cfg, environment, host, password, port, proxy, no_tls, username, keyring):
         gl_api = None
+
+        scheme = "https"
+
+        if no_tls:
+            scheme = "http"
+
+        if scheme == "https" and port is not None:
+            port = 443
         port = port or 80
-        scheme = "https" if tls else "http"
+
         proxies = {scheme: proxy} if proxy else None
 
         if environment is not None:
-            gl_api = GraylogAPIFactory.api_from_config(cfg, environment, port, proxies, tls, username)
+            gl_api = GraylogAPIFactory.api_from_config(cfg, environment, port, proxies, no_tls, username)
         else:
             if host is not None:
                 if username is None:
-                    username = CliInterface.prompt_username(host, port)
+                    username = CliInterface.prompt_username(scheme, host, port)
 
                 gl_api = GraylogAPIFactory.api_from_host(
-                    host=host, port=port, username=username, password=password, scheme=scheme, proxies=proxies
+                    host=host, port=port, username=username, password=password, scheme=scheme, proxies=proxies, tls=no_tls
                 )
             else:
                 if cfg.has_section("environment:default"):
-                    gl_api = GraylogAPIFactory.api_from_config(cfg, "default", port, proxies, tls, username)
+                    gl_api = GraylogAPIFactory.api_from_config(cfg, "default", port, proxies, no_tls, username)
                 else:
                     cli_error("Error: No host or environment configuration specified and no default found.")
 
@@ -228,7 +236,7 @@ class GraylogAPIFactory(object):
             password = get_password_from_keyring(gl_api.host, gl_api.username)
 
         if not password:
-            password = CliInterface.prompt_password(gl_api.host, gl_api.port, gl_api.username)
+            password = CliInterface.prompt_password(scheme, gl_api.host, gl_api.port, gl_api.username)
 
         gl_api.password = password
 
@@ -240,11 +248,12 @@ class GraylogAPIFactory(object):
         return gl_api
 
     @staticmethod
-    def api_from_host(host, port, username, password, scheme, proxies=None):
+    def api_from_host(host, port, username, password, scheme, proxies=None, tls=True):
+        scheme = "https" if tls else "http"
         return GraylogAPI(host=host, port=port, username=username, password=password, scheme=scheme, proxies=proxies)
 
     @staticmethod
-    def api_from_config(cfg, env_name, port, proxies, tls, username):
+    def api_from_config(cfg, env_name, port, proxies, no_tls, username):
         section_name = "environment:" + env_name
 
         host = None
@@ -256,15 +265,15 @@ class GraylogAPIFactory(object):
         if not port and cfg.has_option(section_name, utils.PORT):
             port = cfg.get(section_name, utils.PORT)
 
+        scheme = "https"
+
+        if no_tls:
+            scheme = "http"
+
         if not username and cfg.has_option(section_name, utils.USERNAME):
             username = cfg.get(section_name, utils.USERNAME)
         elif not username:
-            username = CliInterface.prompt_username(host, port)
-
-        if not tls and cfg.has_option(section_name, utils.TLS):
-            tls = cfg.get(section_name, utils.TLS)
-
-        scheme = "https" if tls else "http"
+            username = CliInterface.prompt_username(scheme, host, port)
 
         if not proxies and cfg.has_option(section_name, utils.PROXY):
             proxies = {scheme: cfg.get(section_name, utils.PROXY)}

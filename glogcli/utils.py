@@ -37,21 +37,21 @@ DEFAULT_MESSAGE_FORMAT_TEMPLATE = "{source} {level} {timestamp} {facility} {mess
 def get_glogcli_version():
     return "0.7.0"
 
-def get_config():
+def get_config(config_file_path="~/.glogcli.cfg"):
     config = configparser.ConfigParser()
     try:
-        open(os.path.expanduser('~/.glogcli.cfg'))
+        open(os.path.expanduser(config_file_path))
     except Exception:
-        click.echo("[WARNING] - Could not find '~/.glogcli.cfg' file. Please create the configuration file like:")
+        click.echo("[WARNING] - Could not find %s file. Please create the configuration file like:" % config_file_path)
         click.echo("\n[environment:default]\n"
                    "host=mygraylogserver.com\n"
-                   "port=80\n"
+                   "port=443\n"
                    "username=john.doe\n"
                    "default_stream=*\n"
                    "\n"
                    "[environment:dev]\n"
                    "host=mygraylogserver.dev.com\n"
-                   "port=80\n"
+                   "port=443\n"
                    "proxy=mycompanyproxy.com\n"
                    "username=john.doe\n"
                    "default_stream=57e14cde6fb78216a60d35e8\n"
@@ -67,7 +67,7 @@ def get_config():
                    "color=false\n"
                    "\n")
 
-    config.read(['glogcli.cfg', os.path.expanduser('~/.glogcli.cfg')])
+    config.read(os.path.expanduser(config_file_path))
     return config
 
 

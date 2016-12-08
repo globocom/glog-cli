@@ -35,7 +35,7 @@ test_requirements = [
 
 setup(
     name='glogcli',
-    version='0.6.0',
+    version='0.7.0',
     description="Graylog command line interface.",
     long_description=readme + '\n\n' + history,
     author="Sinval Vieira Mendes Neto",

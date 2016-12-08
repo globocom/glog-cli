@@ -76,17 +76,17 @@ Glog-CLI can reuse some common configurations like address of your Graylog serve
 *~/.glogcli.cfg* or a *glogcli.cfg* (in your current directory). Glog-CLI will use default environment and format 
 whenever an environment or format is omitted.
 
-Here is a template for your glogcli.cfg file:
+Here is a example for your glogcli.cfg file:
 
     [environment:default]
     host=mygraylogserver.com
-    port=80
+    port=443
     username=john.doe
     default_stream=57e14cde6fb78216a60d35e7
 
     [environment:dev]
     host=mygraylogserver.dev.com
-    port=80
+    port=443
     proxy=mycompanyproxy.com
     username=john.doe
     default_stream=57e14cde6fb78216a60d35e8
@@ -103,16 +103,15 @@ Here is a template for your glogcli.cfg file:
 
 Please run the *help* command to more detailed information about all the client features.
 	
-	glogcli --help
-
-    Usage: glogcli [OPTIONS] [QUERY]
+	Usage: glogcli [OPTIONS] [QUERY]
 
 	Options:
-	  -v, --version TEXT              Prints your glogcli version
+	  -v, --version                   Prints your glogcli version
 	  -h, --host TEXT                 Your graylog node's host
 	  -e, --environment TEXT          Label of a preconfigured graylog node
 	  -sq, --saved-query              List user saved queries for selection
-	  --port INTEGER                  Your graylog port
+	  --port TEXT                     Your graylog port
+	  --no-tls                        Not use TLS to connect to Graylog server
 	  -u, --username TEXT             Your graylog username
 	  -p, --password TEXT             Your graylog password (default: prompt)
 	  -k, --keyring / -nk, --no-keyring
@@ -138,4 +137,5 @@ Please run the *help* command to more detailed information about all the client 
 	  -r, --format-template TEXT      Message format template for the log
 	                                  (default: default format
 	  --no-color                      Don't show colored logs
+	  -c, --config TEXT               Custom config file path
 	  --help                          Show this message and exit.

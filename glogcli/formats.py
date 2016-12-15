@@ -18,13 +18,7 @@ class Formatter(object):
         raise NotImplementedError()
 
     def encode_message(self, message):
-        if six.PY2:
-            try:
-                message = message.encode(utils.UTF8)
-            except:
-                pass
-        return six.u(message)
-
+        return message.encode('utf8')
 
 class TailFormatter(Formatter):
 

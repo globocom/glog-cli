@@ -90,9 +90,13 @@ class SearchQuery(object):
 
 class GraylogAPI(object):
 
-    def __init__(self, host, port, username, password=None, host_tz='local', default_stream=None, scheme='http', proxies=None):
+    def __init__(self, host, port, username, api_path=utils.DEFAULT_API_PATH, password=None, host_tz='local', default_stream=None, scheme='http', proxies=None):
         self.host = host
         self.port = port
+        if api_path.endswith("/") or len(api_path) == 0:
+            self.api_path = api_path
+        else:
+            self.api_path = api_path + "/"
         self.username = username
         self.password = password
         self.user = None
@@ -100,7 +104,7 @@ class GraylogAPI(object):
         self.default_stream = default_stream
         self.proxies = proxies
         self.get_header = {"Accept": "application/json"}
-        self.base_url = "{scheme}://{host}:{port}/api/".format(host=host, port=port, scheme=scheme)
+        self.base_url = "{scheme}://{host}:{port}/{api_path}".format(host=host, port=port, scheme=scheme, api_path=api_path)
 
     def update_host_timezone(self, timezone):
         if timezone:
@@ -122,7 +126,7 @@ class GraylogAPI(object):
             click.echo("API error: {} Message: User authorization denied.".format(r.status_code))
             exit()
         else:
-            click.echo("API error: Status: {} Message: {}".format(r.status_code, r.content))
+            click.echo("API error: URL: {} Status: {} Message: {}".format(self.base_url + url, r.status_code, r.content))
             exit()
 
     def search(self, query, fetch_all=False):
@@ -210,7 +214,7 @@ class GraylogAPIFactory(object):
         if no_tls:
             scheme = "http"
 
-        if scheme == "https" and port is not None:
+        if scheme == "https" and port is None:
             port = 443
         port = port or 80
 
@@ -236,7 +240,7 @@ class GraylogAPIFactory(object):
             password = get_password_from_keyring(gl_api.host, gl_api.username)
 
         if not password:
-            password = CliInterface.prompt_password(scheme, gl_api.host, gl_api.port, gl_api.username)
+            password = CliInterface.prompt_password(scheme, gl_api.host, gl_api.port, gl_api.username, gl_api.api_path)
 
         gl_api.password = password
 
@@ -265,6 +269,11 @@ class GraylogAPIFactory(object):
         if not port and cfg.has_option(section_name, utils.PORT):
             port = cfg.get(section_name, utils.PORT)
 
+        if cfg.has_option(section_name, utils.API_PATH):
+            api_path = cfg.get(section_name, utils.API_PATH)
+        else:
+            api_path = utils.DEFAULT_API_PATH
+
         scheme = "https"
 
         if no_tls:
@@ -283,5 +292,5 @@ class GraylogAPIFactory(object):
             default_stream = cfg.get(section_name, utils.DEFAULT_STREAM)
 
         return GraylogAPI(
-            host=host, port=port, username=username, default_stream=default_stream, scheme=scheme, proxies=proxies
+            host=host, port=port, api_path=api_path, username=username, default_stream=default_stream, scheme=scheme, proxies=proxies
         )

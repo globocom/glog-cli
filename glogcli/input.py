@@ -51,14 +51,14 @@ class CliInterface(object):
         return query, fields
 
     @staticmethod
-    def prompt_password(scheme="", host=None, port=None, username=None):
-        prompt_message = "Enter password for {username} at {scheme}://{host}:{port}".format(
-            scheme=scheme, username=username, host=host, port=port
+    def prompt_password(scheme="", host=None, port=None, username=None, api_path=utils.DEFAULT_API_PATH):
+        prompt_message = "Enter password for {username} at {scheme}://{host}:{port}/{api_path}".format(
+            scheme=scheme, username=username, host=host, port=port, api_path=api_path
         )
         return click.prompt(prompt_message, hide_input=True)
 
     @staticmethod
-    def prompt_username(scheme="", host=None, port=None):
-        return click.prompt("Enter username for {scheme}://{host}:{port}".format(
-            scheme=scheme, host=host, port=port), default=getpass.getuser()
+    def prompt_username(scheme="", host=None, port=None, api_path=utils.DEFAULT_API_PATH):
+        return click.prompt("Enter username for {scheme}://{host}:{port}/{api_path}".format(
+            scheme=scheme, host=host, port=port, api_path=api_path), default=getpass.getuser()
         )

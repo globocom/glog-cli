@@ -25,7 +25,7 @@ requirements = [
     'requests>=2.4.3,<3.0',
     'arrow>=0.5.4,<0.8',
     'termcolor==1.1.0',
-    'six==1.9.0',
+    'six>=1.9.0',
     'pytest==2.9.2',
 ]
 

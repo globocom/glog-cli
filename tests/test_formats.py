@@ -1,7 +1,7 @@
 import unittest
 import arrow
 import syslog
-import utils
+from glogcli import utils
 from termcolor import colored
 from glogcli.formats import TailFormatter, DumpFormatter, LogLevel
 from glogcli.graylog_api import Message

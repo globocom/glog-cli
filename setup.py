@@ -19,7 +19,7 @@ requirements = [
     'flake8==2.6.0',
     'coverage==4.1',
     'click>=3.3,<7',
-    'keyring>=9,<10',
+    'keyring==8.7',
     'parsedatetime>=1.4,<3',
     'python-dateutil>=2.4.1,<3',
     'requests>=2.4.3,<3.0',

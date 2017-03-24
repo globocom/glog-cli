@@ -1,4 +1,3 @@
-===============================
 Glog-CLI
 ===============================
 
@@ -82,7 +81,6 @@ Here is a example for your glogcli.cfg file:
     host=mygraylogserver.com
     port=443
     username=john.doe
-    default_stream=57e14cde6fb78216a60d35e7
 
     [environment:dev]
     host=mygraylogserver.dev.com

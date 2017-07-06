@@ -5,8 +5,8 @@ Glog-CLI
 
 Glog-CLI is an open source command line interface for Graylog2.
 
-Instalation
---------
+## Instalation
+
 Requirements: Python 2
 
 Try:
@@ -29,8 +29,8 @@ cd glog-cli/
 pip install . -r requirements.txt
 ```
 
-Usage
---------
+## Usage
+
 Glog-CLI enables you to make searches using the official Graylog query language. To understand how to make queries 
 please see the [documentation](http://docs.graylog.org/en/2.1/pages/queries.html).
 
@@ -76,8 +76,8 @@ glogcli -e dev -r short -st '*'
 ```
 
 
-Configuration
---------
+## Configuration
+
 
 Glog-CLI can reuse some common configurations like address of your Graylog server and your credentials, it will look for a
 *~/.glogcli.cfg* or a *glogcli.cfg* (in your current directory). Glog-CLI will use default environment and format 
@@ -149,3 +149,6 @@ Options:
   -c, --config TEXT               Custom config file path
   --help                          Show this message and exit.
   ```
+
+## Contributing
+See [contributing](https://github.com/pantuza/glog-cli/blob/master/CONTRIBUTING.rst) document to learn how to contribute with us.

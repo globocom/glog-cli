@@ -24,7 +24,7 @@ or you can even install it from a GitHub clone:
 Usage
 --------
 Glog-CLI enables you to make searches using the official Graylog query language. To understand how to make queries 
-please see the documentation [http://docs.graylog.org/en/2.1/pages/queries.html].
+please see the `documentation <http://docs.graylog.org/en/2.1/pages/queries.html>`.
 
 Once you've installed the tool now it's time to run some commands, the following:
 
@@ -137,3 +137,9 @@ Please run the *help* command to more detailed information about all the client 
 	  --no-color                      Don't show colored logs
 	  -c, --config TEXT               Custom config file path
 	  --help                          Show this message and exit.
+
+
+Contributing
+--------
+
+See `contributing <https://github.com/pantuza/glog-cli/blob/master/CONTRIBUTING.rst>` document to learn how to contribute with us.

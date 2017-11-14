@@ -5,8 +5,8 @@ import requests
 import arrow
 import syslog
 import six
-from dateutils import datetime_converter
 from glogcli import utils
+from glogcli.dateutils import datetime_converter
 from glogcli.utils import cli_error, store_password_in_keyring, get_password_from_keyring
 from glogcli.formats import LogLevel
 from glogcli.input import CliInterface
@@ -34,6 +34,7 @@ class SearchResult(object):
         self.fields = result_dict.get("fields", [])
         self.total_results = result_dict.get("total_results", None)
         self.messages = list(map(Message, result_dict.get("messages", [])))
+        
 
 
 class SearchRange(object):

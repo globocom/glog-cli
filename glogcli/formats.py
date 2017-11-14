@@ -25,17 +25,17 @@ class TailFormatter(Formatter):
     def format(self, entry):
         message = entry.message
         timestamp = entry.timestamp.to("local")
-        source = entry.message_dict.get("source")
-        facility = entry.message_dict.get("facility")
+        source = entry.message_dict.get("source", "")
+        facility = entry.message_dict.get("facility", "")
         custom_fields = list(self.fields)
 
         log_level = LogLevel.find_by_syslog_code(entry.level)
         args = {
             'timestamp': timestamp.format(utils.DEFAULT_DATE_FORMAT),
             'level': log_level['name'],
-            'message': self.encode_message(message),
-            'source': source or '',
-            'facility': facility or ''
+            'message': message,
+            'source': source,
+            'facility': facility
         }
 
         for field in custom_fields:

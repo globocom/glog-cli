@@ -11,14 +11,18 @@ class FormatterTestCase(unittest.TestCase):
 
     def setUp(self):
         self.timestamp = arrow.utcnow()
-        message_dict = {
+        self.message = Message({
             'index': 'graylog',
             'message': {
-                'level': 7, 'message': 'dummy message', 'source': 'dummy.source',
-                'timestamp': self.timestamp, 'a': 1, 'b': 2, 'c': 3
+                'a': 1,
+                'b': 2,
+                'c': 3,
+                'level': 7,
+                'message': 'dummy message',
+                'source': 'dummy.source',
+                'timestamp': self.timestamp
             }
-        }
-        self.message = Message(message_dict)
+        })
 
 
 class TailFormatterTestCase(FormatterTestCase):

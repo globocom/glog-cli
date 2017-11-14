@@ -46,8 +46,8 @@ class CliInterface(object):
             click.echo(message)
         search_index = click.prompt("Enter query number:", type=int, default=0)
         search = searches[search_index]
-        query = search['query']['query'].encode(utils.UTF8) or '*'
-        fields = search['query']['fields'].encode(utils.UTF8).split(',')
+        query = search['query']['query'] or '*'
+        fields = search['query']['fields'].split(',')
         return query, fields
 
     @staticmethod

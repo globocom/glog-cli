@@ -151,4 +151,4 @@ Options:
   ```
 
 ## Contributing
-See [contributing](https://github.com/pantuza/glog-cli/blob/master/CONTRIBUTING.rst) document to learn how to contribute with us.
+See [contributing](https://github.com/globocom/glog-cli/blob/master/CONTRIBUTING.rst) document to learn how to contribute with us.

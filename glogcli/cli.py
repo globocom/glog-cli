@@ -15,10 +15,10 @@ from glogcli import utils
 @click.command()
 @click.option("-v", "--version", default=False, is_flag=True, help="Prints your glogcli version")
 @click.option("-h", "--host", default=None, help="Your graylog node's host")
-@click.option("-e", "--environment", default='default',  help="Label of a preconfigured graylog node")
+@click.option("-e", "--environment", default='default', help="Label of a preconfigured graylog node")
 @click.option("-sq", "--saved-query", is_flag=True, default=False, help="List user saved queries for selection")
 @click.option("--port", default=None, help="Your graylog port")
-@click.option("--no-tls",  default=False, is_flag=True, help="Not use TLS to connect to Graylog server")
+@click.option("--no-tls", default=False, is_flag=True, help="Not use TLS to connect to Graylog server")
 @click.option("-u", "--username", default=None, help="Your graylog username")
 @click.option("-p", "--password", default=None, help="Your graylog password (default: prompt)")
 @click.option("-k/-nk", "--keyring/--no-keyring", default=False, help="Use keyring to store/retrieve password")
@@ -88,7 +88,7 @@ def run(version,
     if follow:
         limit = None
         sort = None
-        sr.from_time = arrow.now().replace(seconds=-latency-1)
+        sr.from_time = arrow.now().replace(seconds=-latency - 1)
         sr.to_time = arrow.now().replace(seconds=-latency)
 
     limit = None if limit <= 0 else limit

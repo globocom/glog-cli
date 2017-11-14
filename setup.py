@@ -43,7 +43,7 @@ setup(
     author="Sinval Vieira",
     author_email='sinvalneto01@gmail.com',
     url='https://github.com/globocom/glog-cli',
-    download_url = 'https://github.com/globocom/glog-cli/tarball/0.8.3',
+    download_url='https://github.com/globocom/glog-cli/tarball/0.8.3',
     packages=[
         'glogcli',
     ],

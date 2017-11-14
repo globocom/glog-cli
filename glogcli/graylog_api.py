@@ -34,7 +34,6 @@ class SearchResult(object):
         self.fields = result_dict.get("fields", [])
         self.total_results = result_dict.get("total_results", None)
         self.messages = list(map(Message, result_dict.get("messages", [])))
-        
 
 
 class SearchRange(object):

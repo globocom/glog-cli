@@ -146,7 +146,7 @@ def version_from_keywords(keywords, tag_prefix, verbose=False):
         # "stabilization", as well as "HEAD" and "master".
         tags = set([r for r in refs if re.search(r'\d', r)])
         if verbose:
-            print("discarding '{}', no digits".format(",".join(refs-tags)))
+            print("discarding '{}', no digits".format(",".join(refs - tags)))
     if verbose:
         print("likely tags: {}".format(",".join(sorted(tags))))
     for ref in sorted(tags):

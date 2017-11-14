@@ -10,13 +10,7 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = [
-    'Click>=6.0',
-    'bumpversion==0.5.3',
-    'wheel==0.29.0',
-    'watchdog==0.8.3',
-    'flake8==2.6.0',
-    'coverage==4.1',
+install_requires = [
     'click>=3.3,<7',
     'keyring==8.7',
     'parsedatetime>=1.4,<3',
@@ -25,17 +19,20 @@ requirements = [
     'arrow>=0.5.4,<0.8',
     'termcolor==1.1.0',
     'six>=1.9.0',
+]
+
+tests_require = [
+    'coverage==4.1',
+    'httpretty==0.8.14',
+    'mock==1.3.0',
     'pytest==2.9.2',
 ]
 
-test_requirements = [
-    'httpretty==0.8.14',
-    'mock==1.3.0'
-]
-
 setup_requires = [
+    'bumpversion==0.5.3',
+    'flake8==2.6.0',
     'pytest-runner',
-    'pip>=8.1.2',
+    'wheel==0.29.0',
 ]
 
 setup(
@@ -58,7 +55,7 @@ setup(
         ]
     },
     include_package_data=True,
-    install_requires=requirements,
+    install_requires=install_requires,
     setup_requires=setup_requires,
     license="Apache Software License 2.0",
     zip_safe=False,
@@ -73,5 +70,5 @@ setup(
         'Programming Language :: Python :: 2.7',
     ],
     test_suite='tests',
-    tests_require=test_requirements
+    tests_require=tests_require
 )

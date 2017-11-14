@@ -48,7 +48,7 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr htmlcov/
 
 lint: ## check style with flake8
-	flake8 glogcli tests
+	python setup.py flake8
 
 test: ## run tests quickly with the default Python
 	python setup.py test

@@ -34,7 +34,7 @@ class TailFormatter(Formatter):
         args = {
             'timestamp': timestamp.format(utils.DEFAULT_DATE_FORMAT),
             'level': log_level['name'],
-            'message': message,
+            'message': self.encode_message(message),
             'source': source,
             'facility': facility
         }

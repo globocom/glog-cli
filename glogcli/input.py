@@ -1,5 +1,6 @@
 import getpass
 import click
+
 from glogcli.utils import cli_error
 from glogcli import utils
 
@@ -46,8 +47,9 @@ class CliInterface(object):
             click.echo(message)
         search_index = click.prompt("Enter query number:", type=int, default=0)
         search = searches[search_index]
-        query = search['query']['query'] or '*'
-        fields = search['query']['fields'].split(',')
+        query = search['query']['query'].encode(utils.UTF8) or '*'.encode(utils.UTF8)
+        fields = search['query']['fields'].encode(utils.UTF8).split(','.encode(utils.UTF8))
+
         return query, fields
 
     @staticmethod

@@ -1,5 +1,8 @@
 import unittest
+
 from mock import MagicMock, Mock, patch
+
+from glogcli import utils
 from glogcli.input import CliInterface
 
 
@@ -48,13 +51,20 @@ class CliInterfaceTestCase(unittest.TestCase):
         graylog_api = self._mock_graylog_api_saved_query(self.saved_queries)
         self._mock_prompt_stream(0)
         query, fields = CliInterface.select_saved_query(graylog_api)
-        self.assertEquals('*', query)
-        self.assertEquals(['timestamp', 'level', 'message'], fields)
+        self.assertEquals('*'.encode(utils.UTF8), query)
+        self.assertEquals([
+            'timestamp'.encode(utils.UTF8),
+            'level'.encode(utils.UTF8),
+            'message'.encode(utils.UTF8)
+        ], fields)
 
         self._mock_prompt_stream(1)
         query, fields = CliInterface.select_saved_query(graylog_api)
-        self.assertEquals('level:DEBUG', query)
-        self.assertEquals(['timestamp', 'message'], fields)
+        self.assertEquals('level:DEBUG'.encode(utils.UTF8), query)
+        self.assertEquals([
+            'timestamp'.encode(utils.UTF8),
+            'message'.encode(utils.UTF8)
+        ], fields)
 
     def test_select_saved_query_no_queries_found_for_user(self):
         graylog_api = self._mock_graylog_api_saved_query({'searches': []})

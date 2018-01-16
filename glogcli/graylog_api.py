@@ -5,8 +5,8 @@ import requests
 import arrow
 import syslog
 import six
-from dateutils import datetime_converter
 from glogcli import utils
+from glogcli.dateutils import datetime_converter
 from glogcli.utils import cli_error, store_password_in_keyring, get_password_from_keyring
 from glogcli.formats import LogLevel
 from glogcli.input import CliInterface

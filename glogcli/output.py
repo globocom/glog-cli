@@ -11,7 +11,7 @@ sys.setdefaultencoding('utf8')
 
 
 class SimpleBuffer(object):
-    
+
     def __init__(self):
         self.buffer = []
 
@@ -48,7 +48,7 @@ class LogPrinter(object):
                     self.run_logprint(api, query, formatter, follow=False, output=output)
                     new_range = SearchRange(to_time=arrow.now(LOCAL_TIMEZONE), from_time=arrow.now(LOCAL_TIMEZONE).replace(seconds=-5))
                     query = query.copy_with_range(new_range)
-                    time.sleep(interval/1000.0)
+                    time.sleep(interval / 1000.0)
             except KeyboardInterrupt:
                 print("\nInterrupted follow mode. Exiting...")
 
@@ -75,5 +75,5 @@ class LogPrinter(object):
                         with open(output, "a") as f:
                             f.writelines(('\n'.join(formatted_msgs) + '\n').encode('utf-8').strip())
                     else:
-                        output.writelines(('\n'.join(formatted_msgs)+ '\n').encode('utf-8').strip())
+                        output.writelines(('\n'.join(formatted_msgs) + '\n').encode('utf-8').strip())
             return result

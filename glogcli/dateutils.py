@@ -1,4 +1,3 @@
-
 from __future__ import division, print_function
 import parsedatetime.parsedatetime as pdt
 import datetime
@@ -19,14 +18,12 @@ def datetime_parser(s):
         ts = None
         if what in (1, 2, 3):
             ts = datetime.datetime(*result[:6])
-
-
             ts = arrow.get(ts)
             ts = ts.replace(tzinfo=LOCAL_TIMEZONE)
             return ts
 
     if ts is None:
-         raise ValueError("Cannot parse timestamp '"+s+"'")
+        raise ValueError("Cannot parse timestamp '{0}'".format(s))
 
     return ts
 

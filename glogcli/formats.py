@@ -20,13 +20,14 @@ class Formatter(object):
     def encode_message(self, message):
         return message.encode('utf8')
 
+
 class TailFormatter(Formatter):
 
     def format(self, entry):
         message = entry.message
         timestamp = entry.timestamp.to("local")
-        source = entry.message_dict.get("source")
-        facility = entry.message_dict.get("facility")
+        source = entry.message_dict.get("source", "")
+        facility = entry.message_dict.get("facility", "")
         custom_fields = list(self.fields)
 
         log_level = LogLevel.find_by_syslog_code(entry.level)
@@ -34,8 +35,8 @@ class TailFormatter(Formatter):
             'timestamp': timestamp.format(utils.DEFAULT_DATE_FORMAT),
             'level': log_level['name'],
             'message': self.encode_message(message),
-            'source': source or '',
-            'facility': facility or ''
+            'source': source,
+            'facility': facility
         }
 
         for field in custom_fields:
@@ -87,15 +88,43 @@ class FormatterFactory(object):
 class LogLevel(object):
 
     LEVELS = {
-        syslog.LOG_CRIT:    {'name': 'CRITICAL', 'color': 'white', 'bg_color': 'on_red'},
-        syslog.LOG_ERR:     {'name': 'ERROR', 'color': 'red', 'bg_color': None},
-        syslog.LOG_WARNING: {'name': 'WARNING', 'color': 'yellow', 'bg_color': None},
-        syslog.LOG_NOTICE:  {'name': 'NOTICE', 'color': 'green', 'bg_color': None},
-        syslog.LOG_INFO:    {'name': 'INFO', 'color': 'green', 'bg_color': None},
-        syslog.LOG_DEBUG:   {'name': 'DEBUG', 'color': 'cyan', 'bg_color': None},
+        syslog.LOG_CRIT: {
+            'name': 'CRITICAL',
+            'color': 'white',
+            'bg_color': 'on_red'
+        },
+        syslog.LOG_ERR: {
+            'name': 'ERROR',
+            'color': 'red',
+            'bg_color': None
+        },
+        syslog.LOG_WARNING: {
+            'name': 'WARNING',
+            'color': 'yellow',
+            'bg_color': None
+        },
+        syslog.LOG_NOTICE: {
+            'name': 'NOTICE',
+            'color': 'green',
+            'bg_color': None
+        },
+        syslog.LOG_INFO: {
+            'name': 'INFO',
+            'color': 'green',
+            'bg_color': None
+        },
+        syslog.LOG_DEBUG: {
+            'name': 'DEBUG',
+            'color': 'cyan',
+            'bg_color': None
+        },
     }
 
-    DEFAULT_CONFIG = {'name': '', 'color': 'green', 'bg_color': None}
+    DEFAULT_CONFIG = {
+        'name': '',
+        'color': 'green',
+        'bg_color': None
+    }
 
     @staticmethod
     def find_by_syslog_code(level):

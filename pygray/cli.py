@@ -99,7 +99,7 @@ def run(version,
         sr.from_time = arrow.now().replace(seconds=-latency - 1)
         sr.to_time = arrow.now().replace(seconds=-latency)
 
-    limit = None if limit <= 0 else limit
+    limit = None if limit is None or limit <= 0 else limit
     fields = fields if mode == 'dump' else utils.extract_fields_from_format(cfg, format_template)
     color = get_color_option(cfg, format_template, no_color)
 

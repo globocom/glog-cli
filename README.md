@@ -3,7 +3,7 @@ PyGray
 
 * Free software: Apache Software License 2.0
 
-PyGray is a fork of the PyGray, an open source command line interface for Graylog2.
+PyGray is a modified fork of the Glog-CLI, an open source command line interface for Graylog2.
 
 ## Instalation
 

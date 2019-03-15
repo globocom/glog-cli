@@ -38,6 +38,7 @@ from glogcli import utils
 @click.option('-r', '--format-template', default="default", help="Message format template for the log (default: default format")
 @click.option("--no-color", default=False, is_flag=True, help="Don't show colored logs")
 @click.option("-c", "--config", default="~/.glogcli.cfg", help="Custom config file path")
+@click.option("-i", "--insecure", default=False, help="Disable HTTPS security/certificate validations (not recommended!)")
 @click.argument('query', default="*")
 def run(version,
         host,
@@ -63,6 +64,7 @@ def run(version,
         format_template,
         no_color,
         config,
+        insecure_https
         query):
 
     cfg = get_config(config_file_path=config)
@@ -81,7 +83,7 @@ def run(version,
     if search_from is None:
         search_from = "5 minutes ago"
 
-    graylog_api = GraylogAPIFactory.get_graylog_api(cfg, environment, host, password, port, proxy, no_tls, username, keyring)
+    graylog_api = GraylogAPIFactory.get_graylog_api(cfg, environment, host, password, port, proxy, no_tls, username, keyring, insecure_https)
 
     sr = SearchRange(from_time=search_from, to_time=search_to)
 

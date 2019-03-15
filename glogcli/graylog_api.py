@@ -7,10 +7,14 @@ import syslog
 import six
 from glogcli import utils
 from glogcli.dateutils import datetime_converter
+
 from glogcli.utils import cli_error, store_password_in_keyring, get_password_from_keyring
 from glogcli.formats import LogLevel
 from glogcli.input import CliInterface
 
+from requests.packages.urllib3 import disable_warnings
+
+disable_warnings()
 
 class Message(object):
 
@@ -90,7 +94,7 @@ class SearchQuery(object):
 
 class GraylogAPI(object):
 
-    def __init__(self, host, port, username, api_path=utils.DEFAULT_API_PATH, password=None, host_tz='local', default_stream=None, scheme='http', proxies=None):
+    def __init__(self, host, port, username, api_path=utils.DEFAULT_API_PATH, password=None, host_tz='local', default_stream=None, scheme='http', proxies=None, insecure_https=False):
         self.host = host
         self.port = port
         if api_path.endswith("/") or len(api_path) == 0:
@@ -98,19 +102,46 @@ class GraylogAPI(object):
         else:
             self.api_path = api_path + "/"
         self.username = username
+        self.session_id = None
+        self.session_valid_until = None
         self.password = password
         self.user = None
+        self.session_id = None
+        self.session_valid_until = None
+        self.post_header = {"Accept": "application/json", "Content-Type": "application/json" }
         self.host_tz = host_tz
         self.default_stream = default_stream
         self.proxies = proxies
         self.get_header = {"Accept": "application/json"}
+        self.post_header = {"Accept": "application/json", "Content-Type": "application/json" }
         self.base_url = "{scheme}://{host}:{port}/{api_path}".format(host=host, port=port, scheme=scheme, api_path=api_path)
+        self.insecure_https = insecure_https
+
+
+    def post(self, url, **kwargs):
+        if not self.session_id and not kwargs.get("skip_auth", False):
+            self.auth_session()
+        verify = not self.insecure_https    
+        r = requests.post(self.base_url + url, verify=verify, json=kwargs["data"], headers=self.post_header, proxies=self.proxies)
+        if r.status_code == requests.codes.ok:
+            return r.json()
+        elif r.status_code == 401:
+            click.echo("API error: {} Message: User authorization denied.".format(r.status_code))
+            exit()
+        else:
+            click.echo("API error: URL: {} Status: {} Message: {}".format(self.base_url + url, r.status_code, r.content))
+            exit()
+        
+        
 
     def update_host_timezone(self, timezone):
         if timezone:
             self.host_tz = timezone
 
+
     def get(self, url, **kwargs):
+        if not self.session_id and not kwargs.get("skip_auth", False):
+            self.auth_session()
         params = {}
 
         for label, item in six.iteritems(kwargs):
@@ -119,7 +150,8 @@ class GraylogAPI(object):
             else:
                 params[label] = item
 
-        r = requests.get(self.base_url + url, params=params, headers=self.get_header, auth=(self.username, self.password), proxies=self.proxies)
+        verify = not self.insecure_https
+        r = requests.get(self.base_url + url, verify=verify, params=params, headers=self.get_header, auth=(self.session_id, "session"), proxies=self.proxies)
         if r.status_code == requests.codes.ok:
             return r.json()
         elif r.status_code == 401:
@@ -158,6 +190,12 @@ class GraylogAPI(object):
 
         result.query_object = query
         return result
+
+
+    def auth_session(self):    
+        result = self.post(url="system/sessions", data=dict(username=self.username,password=self.password,host=""), skip_auth=True)
+        self.session_id = result["session_id"]
+        self.session_valid_until = result["valid_until"]
 
     def user_info(self):
         if not self.user:
@@ -206,7 +244,7 @@ class GraylogAPI(object):
 class GraylogAPIFactory(object):
 
     @staticmethod
-    def get_graylog_api(cfg, environment, host, password, port, proxy, no_tls, username, keyring):
+    def get_graylog_api(cfg, environment, host, password, port, proxy, no_tls, username, keyring, insecure_https):
         gl_api = None
 
         scheme = "https"
@@ -221,14 +259,15 @@ class GraylogAPIFactory(object):
         proxies = {scheme: proxy} if proxy else None
 
         if environment is not None:
-            gl_api = GraylogAPIFactory.api_from_config(cfg, environment, port, proxies, no_tls, username)
+            gl_api = GraylogAPIFactory.api_from_config(cfg, environment, port, proxies, no_tls, username, insecure_https)
         else:
             if host is not None:
                 if username is None:
                     username = CliInterface.prompt_username(scheme, host, port)
 
                 gl_api = GraylogAPIFactory.api_from_host(
-                    host=host, port=port, username=username, password=password, scheme=scheme, proxies=proxies, tls=no_tls
+                    host=host, port=port, username=username, password=password, scheme=scheme, proxies=proxies, tls=no_tls,
+                    insecure_https=insecure_https
                 )
             else:
                 if cfg.has_section("environment:default"):
@@ -252,12 +291,12 @@ class GraylogAPIFactory(object):
         return gl_api
 
     @staticmethod
-    def api_from_host(host, port, username, password, scheme, proxies=None, tls=True):
+    def api_from_host(host, port, username, password, scheme, proxies=None, tls=True, insecure_https=False):
         scheme = "https" if tls else "http"
-        return GraylogAPI(host=host, port=port, username=username, password=password, scheme=scheme, proxies=proxies)
+        return GraylogAPI(host=host, port=port, username=username, password=password, scheme=scheme, proxies=proxies, insecure_https=insecure_https)
 
     @staticmethod
-    def api_from_config(cfg, env_name, port, proxies, no_tls, username):
+    def api_from_config(cfg, env_name, port, proxies, no_tls, username, insecure_https):
         section_name = "environment:" + env_name
 
         host = None
@@ -292,5 +331,5 @@ class GraylogAPIFactory(object):
             default_stream = cfg.get(section_name, utils.DEFAULT_STREAM)
 
         return GraylogAPI(
-            host=host, port=port, api_path=api_path, username=username, default_stream=default_stream, scheme=scheme, proxies=proxies
+            host=host, port=port, api_path=api_path, username=username, default_stream=default_stream, scheme=scheme, proxies=proxies, insecure_https=insecure_https
         )

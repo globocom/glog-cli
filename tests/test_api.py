@@ -8,24 +8,32 @@ import glogcli.graylog_api as api
 class GraylogAPITestCase(unittest.TestCase):
 
     def setUp(self):
+        print("1")
         self.api = api.GraylogAPI("dummyhost", 80, "dummy", password="dummy")
 
     def test_search_range(self):
         sr = api.SearchRange("10 minutes ago", arrow.now())
-        self.assertEquals(600, sr.range_in_seconds())
+        self.assertEqual(600, sr.range_in_seconds())
 
         sr = api.SearchRange("10 minutes ago", relative=True)
-        self.assertEquals(600, sr.range_in_seconds())
+        self.assertEqual(600, sr.range_in_seconds())
 
         sr = api.SearchRange("10 minutes ago")
         with self.assertRaises(Exception):
             sr.range_in_seconds()
 
         sr = api.SearchRange("10 minutes ago", "10 minutes ago")
-        self.assertEquals(1, sr.range_in_seconds())
+        self.assertEqual(1, sr.range_in_seconds())
+
+
 
     @httpretty.activate
-    def test_graylog_api_search(self):
+    def test_graylog_api_search(self):        
+        httpretty.register_uri(
+            httpretty.POST, "http://dummyhost:80/api/system/sessions",
+            body=self.generate_mock_auth(),
+            content_type="application/json"
+        )
         httpretty.register_uri(
             httpretty.GET, "http://dummyhost:80/api/search/universal/absolute",
             body=self.generate_search_result(),
@@ -36,26 +44,31 @@ class GraylogAPITestCase(unittest.TestCase):
         sr = api.SearchRange("10 minutes ago", arrow.now())
         q = api.SearchQuery(sr)
         result = self.api.search(q)
-        self.assertEquals(len(result.messages), 1)
-        self.assertEquals("*", result.query)
+        self.assertEqual(len(result.messages), 1)
+        self.assertEqual("*", result.query)
 
         q = api.SearchQuery(sr, fields=["level", "module", "message", "timestamp"], sort="level", ascending=True)
         qq = q.copy_with_range(sr)
         result = self.api.search(qq)
-        self.assertEquals(len(result.messages), 1)
-        self.assertEquals("*", result.query, )
+        self.assertEqual(len(result.messages), 1)
+        self.assertEqual("*", result.query, )
 
         q = api.SearchQuery(sr, fields=["level", "module", "message", "timestamp"], sort="level", ascending=False)
         result = self.api.search(q)
-        self.assertEquals(len(result.messages), 1)
-        self.assertEquals("*", result.query)
+        self.assertEqual(len(result.messages), 1)
+        self.assertEqual("*", result.query)
 
         result = self.api.search(q, fetch_all=True)
-        self.assertEquals(len(result.messages), 1)
-        self.assertEquals("*", result.query)
+        self.assertEqual(len(result.messages), 1)
+        self.assertEqual("*", result.query)
 
     @httpretty.activate
-    def test_to_many_results(self):
+    def test_too_many_results(self):
+        httpretty.register_uri(
+            httpretty.POST, "http://dummyhost:80/api/system/sessions",
+            body=self.generate_mock_auth(),
+            content_type="application/json"
+        )
         httpretty.register_uri(
             httpretty.GET, "http://dummyhost:80/api/search/universal/absolute",
             body=self.generate_search_result(1000000),
@@ -71,16 +84,26 @@ class GraylogAPITestCase(unittest.TestCase):
     @httpretty.activate
     def test_userinfo(self):
         httpretty.register_uri(
+            httpretty.POST, "http://dummyhost:80/api/system/sessions",
+            body=self.generate_mock_auth(),
+            content_type="application/json"
+        )
+        httpretty.register_uri(
             httpretty.GET, "http://dummyhost:80/api/users/dummy",
             body='{"someuser" : "info" }',
             content_type="application/json"
         )
 
         result = self.api.user_info()
-        self.assertEquals({"someuser": "info"}, result)
+        self.assertEqual({"someuser": "info"}, result)
 
     @httpretty.activate
     def test_streams(self):
+        httpretty.register_uri(
+            httpretty.POST, "http://dummyhost:80/api/system/sessions",
+            body=self.generate_mock_auth(),
+            content_type="application/json"
+        )
         httpretty.register_uri(
             httpretty.GET, "http://dummyhost:80/api/streams/enabled",
             body='[{"somestream" : "a" }]',
@@ -88,10 +111,15 @@ class GraylogAPITestCase(unittest.TestCase):
         )
 
         result = self.api.streams()
-        self.assertEquals([{"somestream": "a"}], result)
+        self.assertEqual([{"somestream": "a"}], result)
 
     @httpretty.activate
     def test_saved_searches(self):
+        httpretty.register_uri(
+            httpretty.POST, "http://dummyhost:80/api/system/sessions",
+            body=self.generate_mock_auth(),
+            content_type="application/json"
+        )
         httpretty.register_uri(
             httpretty.GET, "http://dummyhost:80/api/search/saved",
             body='{"searches" : [{"query": {"query": "level:INFO", "fields":"timestamp,message"}}]}',
@@ -99,9 +127,15 @@ class GraylogAPITestCase(unittest.TestCase):
         )
 
         saved_searches = self.api.get_saved_queries()
-        self.assertEquals("level:INFO", saved_searches['searches'][0]['query']['query'])
-        self.assertEquals("timestamp,message", saved_searches['searches'][0]['query']['fields'])
+        self.assertEqual("level:INFO", saved_searches['searches'][0]['query']['query'])
+        self.assertEqual("timestamp,message", saved_searches['searches'][0]['query']['fields'])
 
+
+    def generate_mock_auth(self):
+        return """{
+          "session_id": "12345", "valid_until": "1234"
+        }"""
+        
     def generate_search_result(self, total_results=1000):
         result = """{{
           "query": "*",

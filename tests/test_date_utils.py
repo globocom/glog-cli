@@ -17,7 +17,7 @@ class DateUtilsTestCase(unittest.TestCase):
             (now, lambda x: now)]
 
         for (s, ts) in ts_tuples:
-            self.assertEquals(datetime_parser(s), ts(arrow.now()))
+            self.assertEqual(datetime_parser(s), ts(arrow.now()))
 
         with self.assertRaises(ValueError):
             datetime_parser("fdjkldfhskl")
@@ -25,5 +25,5 @@ class DateUtilsTestCase(unittest.TestCase):
     def test_datetime_converter(self):
         now = arrow.now()
         self.assertIsNone(datetime_converter(None))
-        self.assertEquals(datetime_converter(now), now)
-        self.assertEquals(datetime_converter("1 day ago") , arrow.now().replace(days=-1, microsecond=0, tzinfo='local'))
+        self.assertEqual(datetime_converter(now), now)
+        self.assertEqual(datetime_converter("1 day ago") , arrow.now().replace(days=-1, microsecond=0, tzinfo='local'))

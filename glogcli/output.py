@@ -3,12 +3,11 @@ import time
 import arrow
 from glogcli.graylog_api import SearchRange
 from glogcli.utils import LOCAL_TIMEZONE
+from importlib import reload
 
 import sys
 
 reload(sys)
-sys.setdefaultencoding('utf8')
-
 
 class SimpleBuffer(object):
 

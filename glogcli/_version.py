@@ -53,7 +53,10 @@ class ShellCommand(object):
 
     def _yield_output(self, msg):
         for line in msg.splitlines():
-            yield line
+            try:
+                yield line
+            except StopIteration:
+                return
 
 
 def get_git_cmd(**args):

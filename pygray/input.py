@@ -16,8 +16,8 @@ class CliInterface(object):
             streams = graylog_api.streams()["streams"]
             click.echo("Please select a stream to query:")
             for i, st in enumerate(streams):
-                stream_id = st["id"].encode(utils.UTF8)
-                message = "{}: Stream '{}' (id: {})".format(i, st["title"].encode(utils.UTF8), stream_id)
+                stream_id = st["id"]
+                message = "{}: Stream '{}' (id: {})".format(i, st["title"], stream_id)
                 click.echo(message)
 
             if is_admin:
@@ -41,14 +41,14 @@ class CliInterface(object):
             cli_error("You have no saved queries to display.")
 
         for i, search in enumerate(searches):
-            search_title = search["title"].encode(utils.UTF8)
-            query = search["query"]["query"].encode(utils.UTF8) or "*"
+            search_title = search["title"]
+            query = search["query"]["query"] or "*"
             message = "{}: Query '{}' (query: {})".format(i, search_title, query)
             click.echo(message)
         search_index = click.prompt("Enter query number:", type=int, default=0)
         search = searches[search_index]
-        query = search['query']['query'].encode(utils.UTF8) or '*'.encode(utils.UTF8)
-        fields = search['query']['fields'].encode(utils.UTF8).split(','.encode(utils.UTF8))
+        query = search['query']['query'] or '*'
+        fields = search['query']['fields'].split(',')
 
         return query, fields
 

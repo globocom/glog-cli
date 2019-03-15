@@ -44,7 +44,6 @@ class TailFormatter(Formatter):
                 args[field] = entry.message_dict.get(field, '')
 
         log = self.format_template.format(**args)
-        log = self.format_template.format(**args)
 
         if self.color:
             return colored(log, log_level['color'], log_level['bg_color'])

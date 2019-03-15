@@ -38,7 +38,8 @@ from pygray import utils
 @click.option('-r', '--format-template', default="default", help="Message format template for the log (default: default format")
 @click.option("--no-color", default=False, is_flag=True, help="Don't show colored logs")
 @click.option("-c", "--config", default="~/.pygray.cfg", help="Custom config file path")
-@click.option("-i", "--insecure_https", default=None, is_flag=True, help="Disable HTTPS security/certificate validations (not recommended!)")
+@click.option("-i", "--insecure-https", default=None, is_flag=True, help="Disable HTTPS security/certificate validations (not recommended!)")
+@click.option("-ss", "--store-session", default=None, is_flag=True, help="Store session Id in the configuration file for later use")
 @click.argument('query', default="*")
 def run(version,
         host,
@@ -65,6 +66,7 @@ def run(version,
         no_color,
         config,
         insecure_https,
+        store_session,
         query):
 
     cfg = get_config(config_file_path=config)
@@ -80,16 +82,27 @@ def run(version,
     if cfg.has_option(section='environment:%s' % environment, option='port') and port is None:
         port = cfg.get(section='environment:%s' % environment, option='port')
 
+    if search_from is None:
+        search_from = "5 minutes ago"
+
     if insecure_https is None:
         if cfg.has_option(section='environment:%s' % environment, option='insecure_https'):
             insecure_https = cfg.get(section='environment:%s' % environment, option='insecure_https')
         else:
             insecure_https = False
 
-    if search_from is None:
-        search_from = "5 minutes ago"
+    if store_session is None:
+        if cfg.has_option(section='environment:%s' % environment, option='store_session'):
+            store_session = cfg.get(section='environment:%s' % environment, option='store_session')
+        else:
+            store_session = False
 
-    graylog_api = GraylogAPIFactory.get_graylog_api(cfg, environment, host, password, port, proxy, no_tls, username, keyring, insecure_https)
+    graylog_api = GraylogAPIFactory.get_graylog_api(cfg, environment, host, password, port, proxy, no_tls, username, keyring, insecure_https, store_session)
+
+    if not graylog_api.session_id:
+        graylog_api.auth_session()
+    graylog_api.user_info()
+    graylog_api.update_host_timezone(graylog_api.user_info().get('timezone'))
 
     sr = SearchRange(from_time=search_from, to_time=search_to)
 

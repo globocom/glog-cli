@@ -68,11 +68,11 @@ class LogPrinter(object):
             if formatted_msgs:
                 if output is None:
                     for msg in formatted_msgs:
-                        print(msg.encode('utf-8').strip())
+                        print(msg.strip())
                 else:
-                    if isinstance(output, basestring):
+                    if isinstance(output, str):
                         with open(output, "a") as f:
-                            f.writelines(('\n'.join(formatted_msgs) + '\n').encode('utf-8').strip())
+                            f.writelines(('\n'.join(formatted_msgs) + '\n').strip())
                     else:
-                        output.writelines(('\n'.join(formatted_msgs) + '\n').encode('utf-8').strip())
+                        output.writelines(('\n'.join(formatted_msgs) + '\n').strip())
             return result

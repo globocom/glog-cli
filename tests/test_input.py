@@ -51,19 +51,19 @@ class CliInterfaceTestCase(unittest.TestCase):
         graylog_api = self._mock_graylog_api_saved_query(self.saved_queries)
         self._mock_prompt_stream(0)
         query, fields = CliInterface.select_saved_query(graylog_api)
-        self.assertEqual('*'.encode(utils.UTF8), query)
+        self.assertEqual('*', query)
         self.assertEqual([
-            'timestamp'.encode(utils.UTF8),
-            'level'.encode(utils.UTF8),
-            'message'.encode(utils.UTF8)
+            'timestamp',
+            'level',
+            'message'
         ], fields)
 
         self._mock_prompt_stream(1)
         query, fields = CliInterface.select_saved_query(graylog_api)
-        self.assertEqual('level:DEBUG'.encode(utils.UTF8), query)
+        self.assertEqual('level:DEBUG', query)
         self.assertEqual([
-            'timestamp'.encode(utils.UTF8),
-            'message'.encode(utils.UTF8)
+            'timestamp',
+            'message'
         ], fields)
 
     def test_select_saved_query_no_queries_found_for_user(self):

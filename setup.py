@@ -61,7 +61,7 @@ setup(
     zip_safe=False,
     keywords='pygray',
     classifiers=[
-        'Development Status :: 3 - Beta',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Apache Software License',
         'Natural Language :: English',

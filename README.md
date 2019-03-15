@@ -9,10 +9,10 @@ PyGray is a modified fork of the Glog-CLI, an open source command line interface
 
 Requirements: Python 3
 
-Try:
+Try (don't use Python2' pip!):
 
 ```bash
-pip install pygray
+pip3 install pygray
 ```
 
 or you can even install it from a GitHub clone:
@@ -20,7 +20,7 @@ or you can even install it from a GitHub clone:
 ```bash
 git clone https://github.com/joaomarcusc/pygray
 cd pygray/
-pip install . -r requirements.txt
+pip3 install . -r requirements.txt
 ```
 
 ## Usage

@@ -9,17 +9,14 @@ Instalation
 --------
 Try:
 
-	pip install pygray
+	pip3 install pygray
 
-or:
-
-	easy_install pygray
 
 or you can even install it from a GitHub clone:
 
 	git clone https://github.com/globocom/pygray
 	cd pygray/
-	pip install . -r requirements.txt
+	pip3 install . -r requirements.txt
 
 Usage
 --------

@@ -1,6 +1,6 @@
 import unittest
 import arrow
-from glogcli.dateutils import datetime_parser, datetime_converter
+from pygray.dateutils import datetime_parser, datetime_converter
 
 
 class DateUtilsTestCase(unittest.TestCase):

@@ -1,6 +1,6 @@
 import unittest
 from mock import Mock, MagicMock
-from glogcli.utils import extract_fields_from_format, get_color_option
+from pygray.utils import extract_fields_from_format, get_color_option
 
 
 class UtilsTestCase(unittest.TestCase):

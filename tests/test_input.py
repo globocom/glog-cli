@@ -2,8 +2,8 @@ import unittest
 
 from mock import MagicMock, Mock, patch
 
-from glogcli import utils
-from glogcli.input import CliInterface
+from pygray import utils
+from pygray.input import CliInterface
 
 
 class CliInterfaceTestCase(unittest.TestCase):

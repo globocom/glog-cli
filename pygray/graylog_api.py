@@ -5,12 +5,12 @@ import requests
 import arrow
 import syslog
 import six
-from glogcli import utils
-from glogcli.dateutils import datetime_converter
+from pygray import utils
+from pygray.dateutils import datetime_converter
 
-from glogcli.utils import cli_error, store_password_in_keyring, get_password_from_keyring
-from glogcli.formats import LogLevel
-from glogcli.input import CliInterface
+from pygray.utils import cli_error, store_password_in_keyring, get_password_from_keyring
+from pygray.formats import LogLevel
+from pygray.input import CliInterface
 
 from requests.packages.urllib3 import disable_warnings
 

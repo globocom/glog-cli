@@ -1,10 +1,10 @@
 import unittest
 import arrow
 import syslog
-from glogcli import utils
+from pygray import utils
 from termcolor import colored
-from glogcli.formats import TailFormatter, DumpFormatter, LogLevel
-from glogcli.graylog_api import Message
+from pygray.formats import TailFormatter, DumpFormatter, LogLevel
+from pygray.graylog_api import Message
 
 
 class FormatterTestCase(unittest.TestCase):

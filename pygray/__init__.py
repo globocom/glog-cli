@@ -1,4 +1,4 @@
-from glogcli._version import get_versions
+from pygray._version import get_versions
 
 __version__ = get_versions()['version']
 del get_versions

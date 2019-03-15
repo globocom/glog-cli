@@ -2,7 +2,7 @@ from __future__ import division, print_function
 from termcolor import colored
 import syslog
 import six
-from glogcli import utils
+from pygray import utils
 
 
 class Formatter(object):

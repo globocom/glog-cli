@@ -58,16 +58,16 @@ test-all: ## run tests on every Python version with tox
 	tox
 
 coverage: ## check code coverage quickly with the default Python
-	coverage run --source glogcli py.test
+	coverage run --source pygray py.test
 	
 		coverage report -m
 		coverage html
 		$(BROWSER) htmlcov/index.html
 
 docs: ## generate Sphinx HTML documentation, including API docs
-	rm -f docs/glogcli.rst
+	rm -f docs/pygray.rst
 	rm -f docs/modules.rst
-	sphinx-apidoc -o docs/ glogcli
+	sphinx-apidoc -o docs/ pygray
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
 	$(BROWSER) docs/_build/html/index.html

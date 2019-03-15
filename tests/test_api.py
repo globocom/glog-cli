@@ -2,7 +2,7 @@ from __future__ import division, print_function
 import unittest
 import arrow
 import httpretty
-import glogcli.graylog_api as api
+import pygray.graylog_api as api
 
 
 class GraylogAPITestCase(unittest.TestCase):

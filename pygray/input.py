@@ -1,8 +1,8 @@
 import getpass
 import click
 
-from glogcli.utils import cli_error
-from glogcli import utils
+from pygray.utils import cli_error
+from pygray import utils
 
 
 class CliInterface(object):

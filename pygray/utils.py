@@ -36,11 +36,11 @@ DEFAULT_STREAM = "default_stream"
 DEFAULT_MESSAGE_FORMAT_TEMPLATE = "{source} {level} {timestamp} {facility} {message}"
 
 
-def get_glogcli_version():
+def get_pygray_version():
     return "0.8.1"
 
 
-def get_config(config_file_path="~/.glogcli.cfg"):
+def get_config(config_file_path="~/.pygray.cfg"):
     config = configparser.ConfigParser()
     try:
         open(os.path.expanduser(config_file_path))

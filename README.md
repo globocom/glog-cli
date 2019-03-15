@@ -1,89 +1,83 @@
-Glog-CLI
+PyGray
 ===============================
 
 * Free software: Apache Software License 2.0
 
-Glog-CLI is an open source command line interface for Graylog2.
+PyGray is a fork of the PyGray, an open source command line interface for Graylog2.
 
 ## Instalation
 
-Requirements: Python 2
+Requirements: Python 3
 
 Try:
 
 ```bash
-pip install glogcli
-```
-
-or:
-
-```bash
-easy_install glogcli
+pip install pygray
 ```
 
 or you can even install it from a GitHub clone:
 
 ```bash
-git clone https://github.com/globocom/glog-cli
-cd glog-cli/
+git clone https://github.com/joaomarcusc/pygray
+cd pygray/
 pip install . -r requirements.txt
 ```
 
 ## Usage
 
-Glog-CLI enables you to make searches using the official Graylog query language. To understand how to make queries 
+PyGray enables you to make searches using the official Graylog query language. To understand how to make queries 
 please see the [documentation](http://docs.graylog.org/en/2.1/pages/queries.html).
 
 Once you've installed the tool now it's time to run some commands, the following:
 
 ```bash
-glogcli -h mygraylog.server.com -u john.doe -p password -@ "10 minutes ago" "source:my-app-server"
+pygray -h mygraylog.server.com -u john.doe -p password -@ "10 minutes ago" "source:my-app-server"
 ```
 
 ```bash
-glogcli -h mygraylog.server.com -u john.doe -p password "message:200"
+pygray -h mygraylog.server.com -u john.doe -p password "message:200"
 ```
 ```bash
-glogcli -h mygraylog.server.com -u john.doe -p password -f
-```
-
-```bash
-glogcli -h mygraylog.server.com -u john.doe -p password "level:DEBUG"
+pygray -h mygraylog.server.com -u john.doe -p password -f
 ```
 
 ```bash
-glogcli -h mygraylog.server.com -u john.doe -p password "level:DEBUG" -f
+pygray -h mygraylog.server.com -u john.doe -p password "level:DEBUG"
 ```
 
 ```bash
-glogcli -h mygraylog.server.com -u john.doe -p password "level:DEBUG" -d --fields timestamp,level,message -o dump.csv
+pygray -h mygraylog.server.com -u john.doe -p password "level:DEBUG" -f
 ```
 
 ```bash
-glogcli -h mygraylog.server.com -u john-doe -p password -@ "2016-11-21 00:00:00" -# "2016-11-21 01:00:00" 'message:blabla'
+pygray -h mygraylog.server.com -u john.doe -p password "level:DEBUG" -d --fields timestamp,level,message -o dump.csv
 ```
 
 ```bash
-glogcli -e dev -r short
+pygray -h mygraylog.server.com -u john-doe -p password -@ "2016-11-21 00:00:00" -# "2016-11-21 01:00:00" 'message:blabla'
 ```
 
 ```bash
-glogcli -e dev -r short -st mystreamid
+pygray -e dev -r short
 ```
 
 ```bash
-glogcli -e dev -r short -st '*'
+pygray -e dev -r short -st mystreamid
+```
+
+```bash
+pygray -e dev -r short -st '*'
 ```
 
 
 ## Configuration
 
 
-Glog-CLI can reuse some common configurations like address of your Graylog server and your credentials, it will look for a
-*~/.glogcli.cfg* or a *glogcli.cfg* (in your current directory). Glog-CLI will use default environment and format 
+PyGray can reuse some common configurations like address of your Graylog server and your credentials, it will look for a
+*~/.pygray.cfg* or a *pygray.cfg* (in your current directory). PyGray will use default environment and format 
 whenever an environment or format is omitted.
 
-Here is a example for your glogcli.cfg file:
+Here is a example for your pygray.cfg file:
 
 ```
 [environment:default]
@@ -112,10 +106,10 @@ color=false
 Please run the *help* command to more detailed information about all the client features.
 
 ```
-Usage: glogcli [OPTIONS] [QUERY]
+Usage: pygray [OPTIONS] [QUERY]
 
 Options:
-  -v, --version                   Prints your glogcli version
+  -v, --version                   Prints your pygray version
   -h, --host TEXT                 Your graylog node's host
   -e, --environment TEXT          Label of a preconfigured graylog node
   -sq, --saved-query              List user saved queries for selection
@@ -151,4 +145,4 @@ Options:
   ```
 
 ## Contributing
-See [contributing](https://github.com/globocom/glog-cli/blob/master/CONTRIBUTING.rst) document to learn how to contribute with us.
+See [contributing](https://github.com/globocom/PyGray/blob/master/CONTRIBUTING.rst) document to learn how to contribute with us.

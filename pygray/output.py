@@ -1,8 +1,8 @@
 from __future__ import division, print_function
 import time
 import arrow
-from glogcli.graylog_api import SearchRange
-from glogcli.utils import LOCAL_TIMEZONE
+from pygray.graylog_api import SearchRange
+from pygray.utils import LOCAL_TIMEZONE
 from importlib import reload
 
 import sys

@@ -1,5 +1,6 @@
 from __future__ import division, print_function
 import unittest
+import json
 import arrow
 import httpretty
 import pygray.graylog_api as api
@@ -8,7 +9,6 @@ import pygray.graylog_api as api
 class GraylogAPITestCase(unittest.TestCase):
 
     def setUp(self):
-        print("1")
         self.api = api.GraylogAPI("dummyhost", 80, "dummy", password="dummy")
 
     def test_search_range(self):
@@ -25,13 +25,16 @@ class GraylogAPITestCase(unittest.TestCase):
         sr = api.SearchRange("10 minutes ago", "10 minutes ago")
         self.assertEqual(1, sr.range_in_seconds())
 
-
-
     @httpretty.activate
-    def test_graylog_api_search(self):        
+    def test_graylog_api_search(self):
         httpretty.register_uri(
             httpretty.POST, "http://dummyhost:80/api/system/sessions",
             body=self.generate_mock_auth(),
+            content_type="application/json"
+        )
+        httpretty.register_uri(
+            httpretty.GET, "http://dummyhost:80/api/users/dummy",
+            body=self.generate_mock_user(),
             content_type="application/json"
         )
         httpretty.register_uri(
@@ -70,6 +73,11 @@ class GraylogAPITestCase(unittest.TestCase):
             content_type="application/json"
         )
         httpretty.register_uri(
+            httpretty.GET, "http://dummyhost:80/api/users/dummy",
+            body=self.generate_mock_user(),
+            content_type="application/json"
+        )
+        httpretty.register_uri(
             httpretty.GET, "http://dummyhost:80/api/search/universal/absolute",
             body=self.generate_search_result(1000000),
             content_type="application/json"
@@ -90,18 +98,23 @@ class GraylogAPITestCase(unittest.TestCase):
         )
         httpretty.register_uri(
             httpretty.GET, "http://dummyhost:80/api/users/dummy",
-            body='{"someuser" : "info" }',
+            body=self.generate_mock_user(),
             content_type="application/json"
         )
 
         result = self.api.user_info()
-        self.assertEqual({"someuser": "info"}, result)
+        self.assertEqual(json.loads(self.generate_mock_user()), result)
 
     @httpretty.activate
     def test_streams(self):
         httpretty.register_uri(
             httpretty.POST, "http://dummyhost:80/api/system/sessions",
             body=self.generate_mock_auth(),
+            content_type="application/json"
+        )
+        httpretty.register_uri(
+            httpretty.GET, "http://dummyhost:80/api/users/dummy",
+            body=self.generate_mock_user(),
             content_type="application/json"
         )
         httpretty.register_uri(
@@ -121,6 +134,11 @@ class GraylogAPITestCase(unittest.TestCase):
             content_type="application/json"
         )
         httpretty.register_uri(
+            httpretty.GET, "http://dummyhost:80/api/users/dummy",
+            body=self.generate_mock_user(),
+            content_type="application/json"
+        )
+        httpretty.register_uri(
             httpretty.GET, "http://dummyhost:80/api/search/saved",
             body='{"searches" : [{"query": {"query": "level:INFO", "fields":"timestamp,message"}}]}',
             content_type="application/json"
@@ -129,7 +147,6 @@ class GraylogAPITestCase(unittest.TestCase):
         saved_searches = self.api.get_saved_queries()
         self.assertEqual("level:INFO", saved_searches['searches'][0]['query']['query'])
         self.assertEqual("timestamp,message", saved_searches['searches'][0]['query']['fields'])
-
 
     def generate_mock_auth(self):
         return """{
@@ -188,6 +205,9 @@ class GraylogAPITestCase(unittest.TestCase):
         }}
         """
         return result.format(total_results=total_results)
+
+    def generate_mock_user(self):
+        return """{  "timezone": "America/Sao_Paulo" }"""
 
 
 

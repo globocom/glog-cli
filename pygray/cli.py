@@ -99,7 +99,7 @@ def run(version,
 
     graylog_api = GraylogAPIFactory.get_graylog_api(cfg, environment, host, password, port, proxy, no_tls, username, keyring, insecure_https, store_session)
 
-    if not graylog_api.session_id:
+    if not graylog_api.session_id or not graylog_api.is_session_active():
         graylog_api.auth_session()
     graylog_api.user_info()
     graylog_api.update_host_timezone(graylog_api.user_info().get('timezone'))

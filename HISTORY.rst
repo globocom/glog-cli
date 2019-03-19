@@ -5,6 +5,12 @@ History
 0.9.4 (2019-03-15)
 ------------------
 
+* Session expiration was not handled properly when create-session was set and stored
+  session Id was expired. It should try to authenticate again. Fixed.
+
+0.9.4 (2019-03-15)
+------------------
+
 * Allow the session Id to be stored in the configuration file for subsequent pygray
   calls
 * Fixed various calls to str's "encode", no longer necessary in Python3

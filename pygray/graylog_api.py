@@ -118,28 +118,20 @@ class GraylogAPI(object):
         self.store_session = store_session
 
     def post(self, url, **kwargs):
-        if not self.session_id and not kwargs.get("skip_auth", False):
+        skip_auth, ignore_errors = kwargs.get("skip_auth", False), kwargs.get("ignore_errors", False)
+        if not self.session_id and not skip_auth:
             self.auth_session()
         verify = not self.insecure_https    
         r = requests.post(self.base_url + url, verify=verify, json=kwargs["data"], headers=self.post_header, proxies=self.proxies)
-        if r.status_code == requests.codes.ok:
-            return r.json()
-        elif r.status_code == 401:
-            click.echo("API error: {} Message: User authorization denied.".format(r.status_code))
-            exit()
-        else:
-            click.echo("API error: URL: {} Status: {} Message: {}".format(self.base_url + url, r.status_code, r.content))
-            exit()
-        
-        
+        return self._parse_response(r, url, ignore_errors)
 
     def update_host_timezone(self, timezone):
         if timezone:
             self.host_tz = timezone
 
-
     def get(self, url, **kwargs):
-        if not self.session_id and not kwargs.get("skip_auth", False):
+        skip_auth, ignore_errors = kwargs.get("skip_auth", False), kwargs.get("ignore_errors", False)
+        if not self.session_id and not skip_auth:
             self.auth_session()
         params = {}
 
@@ -151,17 +143,10 @@ class GraylogAPI(object):
 
         verify = not self.insecure_https
         get_args = dict(verify=verify, params=params, headers=self.get_header, proxies=self.proxies)
-        if not kwargs.get("skip_auth", False):
+        if not skip_auth:
             get_args["auth"] = (self.session_id, "session")
         r = requests.get(self.base_url + url, **get_args)
-        if r.status_code == requests.codes.ok:
-            return r.json()
-        elif r.status_code == 401:
-            click.echo("API error: {} Message: User authorization denied.".format(r.status_code))
-            exit()
-        else:
-            click.echo("API error: URL: {} Status: {} Message: {}".format(self.base_url + url, r.status_code, r.content))
-            exit()
+        return self._parse_response(r, url, ignore_errors)
 
     def search(self, query, fetch_all=False):
         sort = None
@@ -193,10 +178,9 @@ class GraylogAPI(object):
         result.query_object = query
         return result
 
-
     def auth_session(self):
         must_authenticate = True
-        if self.session_id and self.is_session_active():
+        if self.is_session_active():
             must_authenticate = False
         if must_authenticate:
             if not self.password:
@@ -214,6 +198,8 @@ class GraylogAPI(object):
 
 
     def is_session_active(self):
+        if not self.session_id:
+            return False
         value = self.get(url=("users/" + self.username), ignore_errors=True)
         return value is not None
 
@@ -260,6 +246,17 @@ class GraylogAPI(object):
 
         return SearchResult(result)
 
+    def _parse_response(self, r, url, ignore_errors):
+        if r.status_code == requests.codes.ok:
+            return r.json()
+        elif ignore_errors:
+            return None
+        elif r.status_code == 401:
+            click.echo("API error: {} Message: User authorization denied.".format(r.status_code))
+            exit()
+        else:
+            click.echo("API error: URL: {} Status: {} Message: {}".format(self.base_url + url, r.status_code, r.content))
+            exit()
 
 
 class GraylogAPIFactory(object):

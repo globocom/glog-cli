@@ -112,7 +112,7 @@ class GraylogAPI(object):
         self.proxies = proxies
         self.scheme = scheme
         self.get_header = {"Accept": "application/json"}
-        self.post_header = {"Accept": "application/json", "Content-Type": "application/json" }
+        self.post_header = {"Accept": "application/json", "Content-Type": "application/json", "X-Requested-By": "pygray"}
         self.base_url = "{scheme}://{host}:{port}/{api_path}".format(host=host, port=port, scheme=scheme, api_path=api_path)
         self.insecure_https = insecure_https
         self.store_session = store_session

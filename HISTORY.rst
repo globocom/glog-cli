@@ -2,6 +2,11 @@
 History
 =======
 
+0.9.8 (2019-04-10)
+------------------
+
+* Added X-Requested-By so some servers won't block requests because of CSRF protection.
+
 0.9.4 (2019-03-15)
 ------------------
 

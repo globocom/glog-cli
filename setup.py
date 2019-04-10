@@ -37,7 +37,7 @@ setup_requires = [
 
 setup(
     name='pygray',
-    version='0.9.6',
+    version='0.9.8',
     description="Graylog command line interface (pygray fork).",
     long_description=readme + '\n\n' + history,
     author="Joao Marcus Christ",

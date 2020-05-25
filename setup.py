@@ -11,7 +11,7 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 install_requires = [
-    'click>=3.3,<7',
+    'click>=3.3,<=7.3',
     'keyring==8.7',
     'parsedatetime>=1.4,<3',
     'python-dateutil>=2.4.1,<3',
@@ -25,7 +25,7 @@ tests_require = [
     'coverage==4.1',
     'httpretty==0.8.14',
     'mock==1.3.0',
-    'pytest==2.9.2',
+    'pytest>=2.9.2,<=5.3',
 ]
 
 setup_requires = [

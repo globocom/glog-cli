@@ -5,7 +5,7 @@ Glog-CLI
 
 Glog-CLI is an open source command line interface for Graylog2.
 
-## Instalation
+## Installation
 
 Requirements: Python 2
 

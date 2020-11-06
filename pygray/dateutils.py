@@ -3,7 +3,7 @@ import parsedatetime.parsedatetime as pdt
 import datetime
 import arrow
 import six
-from glogcli.utils import LOCAL_TIMEZONE
+from pygray.utils import LOCAL_TIMEZONE
 
 
 def datetime_parser(s):

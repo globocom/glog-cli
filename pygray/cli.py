@@ -4,16 +4,16 @@
 from __future__ import division, print_function, absolute_import
 import click
 import arrow
-from glogcli.graylog_api import SearchRange, SearchQuery, GraylogAPIFactory
-from glogcli.utils import get_config, get_color_option, get_glogcli_version
-from glogcli.output import LogPrinter
-from glogcli.input import CliInterface
-from glogcli.formats import FormatterFactory
-from glogcli import utils
+from pygray.graylog_api import SearchRange, SearchQuery, GraylogAPIFactory
+from pygray.utils import get_config, get_color_option, get_pygray_version
+from pygray.output import LogPrinter
+from pygray.input import CliInterface
+from pygray.formats import FormatterFactory
+from pygray import utils
 
 
 @click.command()
-@click.option("-v", "--version", default=False, is_flag=True, help="Prints your glogcli version")
+@click.option("-v", "--version", default=False, is_flag=True, help="Prints your pygray version")
 @click.option("-h", "--host", default=None, help="Your graylog node's host")
 @click.option("-e", "--environment", default='default', help="Label of a preconfigured graylog node")
 @click.option("-sq", "--saved-query", is_flag=True, default=False, help="List user saved queries for selection")
@@ -37,7 +37,9 @@ from glogcli import utils
 @click.option("--proxy", default=None, help="Proxy to use for the http/s request")
 @click.option('-r', '--format-template', default="default", help="Message format template for the log (default: default format")
 @click.option("--no-color", default=False, is_flag=True, help="Don't show colored logs")
-@click.option("-c", "--config", default="~/.glogcli.cfg", help="Custom config file path")
+@click.option("-c", "--config", default="~/.pygray.cfg", help="Custom config file path")
+@click.option("-i", "--insecure-https", default=None, is_flag=True, help="Disable HTTPS security/certificate validations (not recommended!)")
+@click.option("-ss", "--store-session", default=None, is_flag=True, help="Store session Id in the configuration file for later use")
 @click.argument('query', default="*")
 def run(version,
         host,
@@ -63,12 +65,14 @@ def run(version,
         format_template,
         no_color,
         config,
+        insecure_https,
+        store_session,
         query):
 
     cfg = get_config(config_file_path=config)
 
     if version:
-        click.echo(get_glogcli_version())
+        click.echo(get_pygray_version())
         exit()
 
     if search_from and follow:
@@ -81,7 +85,24 @@ def run(version,
     if search_from is None:
         search_from = "5 minutes ago"
 
-    graylog_api = GraylogAPIFactory.get_graylog_api(cfg, environment, host, password, port, proxy, no_tls, username, keyring)
+    if insecure_https is None:
+        if cfg.has_option(section='environment:%s' % environment, option='insecure_https'):
+            insecure_https = cfg.get(section='environment:%s' % environment, option='insecure_https')
+        else:
+            insecure_https = False
+
+    if store_session is None:
+        if cfg.has_option(section='environment:%s' % environment, option='store_session'):
+            store_session = cfg.get(section='environment:%s' % environment, option='store_session')
+        else:
+            store_session = False
+
+    graylog_api = GraylogAPIFactory.get_graylog_api(cfg, environment, host, password, port, proxy, no_tls, username, keyring, insecure_https, store_session)
+
+    if not graylog_api.session_id or not graylog_api.is_session_active():
+        graylog_api.auth_session()
+    graylog_api.user_info()
+    graylog_api.update_host_timezone(graylog_api.user_info().get('timezone'))
 
     sr = SearchRange(from_time=search_from, to_time=search_to)
 
@@ -91,7 +112,7 @@ def run(version,
         sr.from_time = arrow.now().replace(seconds=-latency - 1)
         sr.to_time = arrow.now().replace(seconds=-latency)
 
-    limit = None if limit <= 0 else limit
+    limit = None if limit is None or limit <= 0 else limit
     fields = fields if mode == 'dump' else utils.extract_fields_from_format(cfg, format_template)
     color = get_color_option(cfg, format_template, no_color)
 

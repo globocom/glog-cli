@@ -2,7 +2,7 @@ from __future__ import division, print_function
 from termcolor import colored
 import syslog
 import six
-from glogcli import utils
+from pygray import utils
 
 
 class Formatter(object):
@@ -18,7 +18,7 @@ class Formatter(object):
         raise NotImplementedError()
 
     def encode_message(self, message):
-        return message.encode('utf8')
+        return message
 
 
 class TailFormatter(Formatter):
@@ -43,7 +43,7 @@ class TailFormatter(Formatter):
             if field not in self.DEFAULT_FIELDS:
                 args[field] = entry.message_dict.get(field, '')
 
-        log = six.u(self.format_template).format(**args)
+        log = self.format_template.format(**args)
 
         if self.color:
             return colored(log, log_level['color'], log_level['bg_color'])

@@ -5,12 +5,16 @@ import requests
 import arrow
 import syslog
 import six
-from glogcli import utils
-from glogcli.dateutils import datetime_converter
-from glogcli.utils import cli_error, store_password_in_keyring, get_password_from_keyring
-from glogcli.formats import LogLevel
-from glogcli.input import CliInterface
+from pygray import utils
+from pygray.dateutils import datetime_converter
 
+from pygray.utils import cli_error, store_password_in_keyring, get_password_from_keyring, write_config_entry
+from pygray.formats import LogLevel
+from pygray.input import CliInterface
+
+from requests.packages.urllib3 import disable_warnings
+
+disable_warnings()
 
 class Message(object):
 
@@ -90,7 +94,7 @@ class SearchQuery(object):
 
 class GraylogAPI(object):
 
-    def __init__(self, host, port, username, api_path=utils.DEFAULT_API_PATH, password=None, host_tz='local', default_stream=None, scheme='http', proxies=None):
+    def __init__(self, host, port, username, api_path=utils.DEFAULT_API_PATH, password=None, host_tz='local', default_stream=None, scheme='http', proxies=None, insecure_https=False, session_id=None, store_session=False):
         self.host = host
         self.port = port
         if api_path.endswith("/") or len(api_path) == 0:
@@ -100,17 +104,35 @@ class GraylogAPI(object):
         self.username = username
         self.password = password
         self.user = None
+        self.session_id = session_id
+
+        self.post_header = {"Accept": "application/json", "Content-Type": "application/json" }
         self.host_tz = host_tz
         self.default_stream = default_stream
         self.proxies = proxies
+        self.scheme = scheme
         self.get_header = {"Accept": "application/json"}
+        self.post_header = {"Accept": "application/json", "Content-Type": "application/json", "X-Requested-By": "pygray"}
         self.base_url = "{scheme}://{host}:{port}/{api_path}".format(host=host, port=port, scheme=scheme, api_path=api_path)
+        self.insecure_https = insecure_https
+        self.store_session = store_session
+
+    def post(self, url, **kwargs):
+        skip_auth, ignore_errors = kwargs.get("skip_auth", False), kwargs.get("ignore_errors", False)
+        if not self.session_id and not skip_auth:
+            self.auth_session()
+        verify = not self.insecure_https    
+        r = requests.post(self.base_url + url, verify=verify, json=kwargs["data"], headers=self.post_header, proxies=self.proxies)
+        return self._parse_response(r, url, ignore_errors)
 
     def update_host_timezone(self, timezone):
         if timezone:
             self.host_tz = timezone
 
     def get(self, url, **kwargs):
+        skip_auth, ignore_errors = kwargs.get("skip_auth", False), kwargs.get("ignore_errors", False)
+        if not self.session_id and not skip_auth:
+            self.auth_session()
         params = {}
 
         for label, item in six.iteritems(kwargs):
@@ -119,15 +141,12 @@ class GraylogAPI(object):
             else:
                 params[label] = item
 
-        r = requests.get(self.base_url + url, params=params, headers=self.get_header, auth=(self.username, self.password), proxies=self.proxies)
-        if r.status_code == requests.codes.ok:
-            return r.json()
-        elif r.status_code == 401:
-            click.echo("API error: {} Message: User authorization denied.".format(r.status_code))
-            exit()
-        else:
-            click.echo("API error: URL: {} Status: {} Message: {}".format(self.base_url + url, r.status_code, r.content))
-            exit()
+        verify = not self.insecure_https
+        get_args = dict(verify=verify, params=params, headers=self.get_header, proxies=self.proxies)
+        if not skip_auth:
+            get_args["auth"] = (self.session_id, "session")
+        r = requests.get(self.base_url + url, **get_args)
+        return self._parse_response(r, url, ignore_errors)
 
     def search(self, query, fetch_all=False):
         sort = None
@@ -158,6 +177,31 @@ class GraylogAPI(object):
 
         result.query_object = query
         return result
+
+    def auth_session(self):
+        must_authenticate = True
+        if self.is_session_active():
+            must_authenticate = False
+        if must_authenticate:
+            if not self.password:
+                self.password = CliInterface.prompt_password(self.scheme, self.host, self.port, self.username, self.api_path)
+            result = self.post(url="system/sessions", data=dict(username=self.username,password=self.password,host=""), skip_auth=True)
+            self.session_id = result["session_id"]
+            if self.store_session:
+                self.store_current_session()
+        self.update_host_timezone(self.user_info().get('timezone'))
+
+
+
+    def store_current_session(self):
+        write_config_entry("sessions", self.host, self.session_id)
+
+
+    def is_session_active(self):
+        if not self.session_id:
+            return False
+        value = self.get(url=("users/" + self.username), ignore_errors=True)
+        return value is not None
 
     def user_info(self):
         if not self.user:
@@ -202,11 +246,23 @@ class GraylogAPI(object):
 
         return SearchResult(result)
 
+    def _parse_response(self, r, url, ignore_errors):
+        if r.status_code == requests.codes.ok:
+            return r.json()
+        elif ignore_errors:
+            return None
+        elif r.status_code == 401:
+            click.echo("API error: {} Message: User authorization denied.".format(r.status_code))
+            exit()
+        else:
+            click.echo("API error: URL: {} Status: {} Message: {}".format(self.base_url + url, r.status_code, r.content))
+            exit()
+
 
 class GraylogAPIFactory(object):
 
     @staticmethod
-    def get_graylog_api(cfg, environment, host, password, port, proxy, no_tls, username, keyring):
+    def get_graylog_api(cfg, environment, host, password, port, proxy, no_tls, username, keyring, insecure_https, store_session):
         gl_api = None
 
         scheme = "https"
@@ -221,15 +277,15 @@ class GraylogAPIFactory(object):
         proxies = {scheme: proxy} if proxy else None
 
         if environment is not None:
-            gl_api = GraylogAPIFactory.api_from_config(cfg, environment, port, proxies, no_tls, username)
+            gl_api = GraylogAPIFactory.api_from_config(cfg, environment, port, proxies, no_tls, username, insecure_https, store_session)
         else:
             if host is not None:
                 if username is None:
                     username = CliInterface.prompt_username(scheme, host, port)
 
                 gl_api = GraylogAPIFactory.api_from_host(
-                    host=host, port=port, username=username, password=password, scheme=scheme, proxies=proxies, tls=no_tls
-                )
+                    host=host, port=port, username=username, password=password, scheme=scheme, proxies=proxies, tls=no_tls,
+                    insecure_https=insecure_https, store_session=store_session)
             else:
                 if cfg.has_section("environment:default"):
                     gl_api = GraylogAPIFactory.api_from_config(cfg, "default", port, proxies, no_tls, username)
@@ -239,7 +295,7 @@ class GraylogAPIFactory(object):
         if not password and keyring:
             password = get_password_from_keyring(gl_api.host, gl_api.username)
 
-        if not password:
+        if not password and not gl_api.session_id:
             password = CliInterface.prompt_password(scheme, gl_api.host, gl_api.port, gl_api.username, gl_api.api_path)
 
         gl_api.password = password
@@ -247,17 +303,15 @@ class GraylogAPIFactory(object):
         if keyring:
             store_password_in_keyring(gl_api.host, gl_api.username, password)
 
-        gl_api.update_host_timezone(gl_api.user_info().get('timezone'))
-
         return gl_api
 
     @staticmethod
-    def api_from_host(host, port, username, password, scheme, proxies=None, tls=True):
+    def api_from_host(host, port, username, password, scheme, proxies=None, tls=True, insecure_https=False, session_id=None, store_session=False):
         scheme = "https" if tls else "http"
-        return GraylogAPI(host=host, port=port, username=username, password=password, scheme=scheme, proxies=proxies)
+        return GraylogAPI(host=host, port=port, username=username, password=password, scheme=scheme, proxies=proxies, insecure_https=insecure_https, session_id=session_id, store_session=store_session)
 
     @staticmethod
-    def api_from_config(cfg, env_name, port, proxies, no_tls, username):
+    def api_from_config(cfg, env_name, port, proxies, no_tls, username, insecure_https, store_session):
         section_name = "environment:" + env_name
 
         host = None
@@ -284,6 +338,12 @@ class GraylogAPIFactory(object):
         elif not username:
             username = CliInterface.prompt_username(scheme, host, port)
 
+        if cfg.has_section("sessions") and cfg.get("sessions", host):
+            session_id = cfg.get("sessions", host)
+        else:
+            session_id = None
+
+
         if not proxies and cfg.has_option(section_name, utils.PROXY):
             proxies = {scheme: cfg.get(section_name, utils.PROXY)}
 
@@ -292,5 +352,6 @@ class GraylogAPIFactory(object):
             default_stream = cfg.get(section_name, utils.DEFAULT_STREAM)
 
         return GraylogAPI(
-            host=host, port=port, api_path=api_path, username=username, default_stream=default_stream, scheme=scheme, proxies=proxies
+            host=host, port=port, api_path=api_path, username=username, default_stream=default_stream, scheme=scheme, proxies=proxies, insecure_https=insecure_https,
+            session_id=session_id, store_session=store_session
         )

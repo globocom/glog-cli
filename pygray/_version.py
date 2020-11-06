@@ -26,7 +26,7 @@ git_full = "$Format:%H$"
 
 # general settings
 tag_prefix = 'v'  # tags are like v1.2.0
-package = "glogcli"
+package = "pygray"
 namespace = []
 root_pkg = namespace[0] if namespace else package
 if namespace:
@@ -53,7 +53,10 @@ class ShellCommand(object):
 
     def _yield_output(self, msg):
         for line in msg.splitlines():
-            yield line
+            try:
+                yield line
+            except StopIteration:
+                return
 
 
 def get_git_cmd(**args):

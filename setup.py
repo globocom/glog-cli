@@ -13,7 +13,7 @@ with open('HISTORY.rst') as history_file:
 install_requires = [
     'click>=3.3,<7',
     'keyring==8.7',
-    'parsedatetime>=1.4,<3',
+    'parsedatetime>=2.4,<3',
     'python-dateutil>=2.4.1,<3',
     'requests>=2.4.3,<3.0',
     'arrow>=0.5.4,<0.8',
@@ -25,7 +25,7 @@ tests_require = [
     'coverage==4.1',
     'httpretty==0.8.14',
     'mock==1.3.0',
-    'pytest==2.9.2',
+    'pytest==4.3.1',
 ]
 
 setup_requires = [
@@ -36,22 +36,21 @@ setup_requires = [
 ]
 
 setup(
-    name='glogcli',
-    version='0.8.3',
-    description="Graylog command line interface.",
+    name='pygray',
+    version='0.9.8',
+    description="Graylog command line interface (pygray fork).",
     long_description=readme + '\n\n' + history,
-    author="Sinval Vieira",
-    author_email='sinvalneto01@gmail.com',
-    url='https://github.com/globocom/glog-cli',
-    download_url='https://github.com/globocom/glog-cli/tarball/0.8.3',
+    author="Joao Marcus Christ",
+    author_email='joaoma@gmail.com',
+    url='https://github.com/joaomarcusc/pygray',
     packages=[
-        'glogcli',
+        'pygray',
     ],
-    package_dir={'glogcli':
-                 'glogcli'},
+    package_dir={'pygray':
+                 'pygray'},
     entry_points={
         'console_scripts': [
-            'glogcli=glogcli.cli:run'
+            'pygray=pygray.cli:run'
         ]
     },
     include_package_data=True,
@@ -59,15 +58,16 @@ setup(
     setup_requires=setup_requires,
     license="Apache Software License 2.0",
     zip_safe=False,
-    keywords='glogcli',
+    keywords='pygray',
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Apache Software License',
         'Natural Language :: English',
-        "Programming Language :: Python :: 2",
-        'Programming Language :: Python :: 2.6',
-        'Programming Language :: Python :: 2.7',
+        "Programming Language :: Python :: 3",
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
     ],
     test_suite='tests',
     tests_require=tests_require

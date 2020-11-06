@@ -36,11 +36,11 @@ DEFAULT_STREAM = "default_stream"
 DEFAULT_MESSAGE_FORMAT_TEMPLATE = "{source} {level} {timestamp} {facility} {message}"
 
 
-def get_glogcli_version():
+def get_pygray_version():
     return "0.8.1"
 
 
-def get_config(config_file_path="~/.glogcli.cfg"):
+def get_config(config_file_path="~/.pygray.cfg"):
     config = configparser.ConfigParser()
     try:
         open(os.path.expanduser(config_file_path))
@@ -73,6 +73,15 @@ def get_config(config_file_path="~/.glogcli.cfg"):
     config.read(os.path.expanduser(config_file_path))
     return config
 
+def write_config_entry(section_name, key, value, config_file_path = os.path.join(os.path.expanduser("~"),".pygray.cfg")):
+    config = configparser.ConfigParser()
+    with open(os.path.expanduser(config_file_path)) as fobj:
+        config.read_file(fobj)
+    with open(os.path.expanduser(config_file_path), "w+") as fobj:
+        if not config.has_section(section_name):
+            config.add_section(section_name)
+        config.set(section_name, key, value)
+        config.write(fobj)
 
 def cli_error(msg):
     click.echo(click.style(msg, fg='red'))

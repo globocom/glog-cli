@@ -1,14 +1,15 @@
 from __future__ import division, print_function
 import time
 import arrow
+from six import PY2, PY3
 from glogcli.graylog_api import SearchRange
 from glogcli.utils import LOCAL_TIMEZONE
 
 import sys
 
-reload(sys)
-sys.setdefaultencoding('utf8')
-
+if PY2:
+    reload(sys)
+    sys.setdefaultencoding('utf8')
 
 class SimpleBuffer(object):
 
@@ -66,14 +67,27 @@ class LogPrinter(object):
 
             formatted_msgs.reverse()
 
-            if formatted_msgs:
-                if output is None:
-                    for msg in formatted_msgs:
-                        print(msg.encode('utf-8').strip())
-                else:
-                    if isinstance(output, basestring):
-                        with open(output, "a") as f:
-                            f.writelines(('\n'.join(formatted_msgs) + '\n').encode('utf-8').strip())
+
+            if PY3:
+                if formatted_msgs:
+                    if output is None:
+                        for msg in formatted_msgs:
+                            print(msg.strip())
                     else:
-                        output.writelines(('\n'.join(formatted_msgs) + '\n').encode('utf-8').strip())
+                        if isinstance(output, basestring):
+                            with open(output, "a") as f:
+                                f.writelines(('\n'.join(formatted_msgs) + '\n').strip())
+                        else:
+                            output.writelines(('\n'.join(formatted_msgs) + '\n').strip())
+            else:    
+                if formatted_msgs:
+                    if output is None:
+                        for msg in formatted_msgs:
+                            print(msg.encode('utf-8').strip())
+                    else:
+                        if isinstance(output, basestring):
+                            with open(output, "a") as f:
+                                f.writelines(('\n'.join(formatted_msgs) + '\n').encode('utf-8').strip())
+                        else:
+                            output.writelines(('\n'.join(formatted_msgs) + '\n').encode('utf-8').strip())
             return result

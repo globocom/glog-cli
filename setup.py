@@ -32,7 +32,7 @@ setup_requires = [
     'bumpversion==0.5.3',
     'flake8==2.6.0',
     'pytest-runner',
-    'wheel==0.29.0',
+    'wheel==0.38.1',
 ]
 
 setup(
